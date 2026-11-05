@@ -1,0 +1,2731 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quel Personnage de Jeu Vidéo Es-Tu ?</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Outfit:wght@300;400;600;800&display=swap');
+
+:root {
+  --bg-deep: #0a0a0f;
+  --bg-card: #12121c;
+  --bg-card-hover: #1a1a2e;
+  --neon-cyan: #00f0ff;
+  --neon-magenta: #ff00aa;
+  --neon-gold: #ffd000;
+  --neon-green: #00ff88;
+  --text-primary: #e8e6f0;
+  --text-dim: #6b6888;
+  --glow-cyan: 0 0 20px rgba(0, 240, 255, 0.4), 0 0 60px rgba(0, 240, 255, 0.15);
+  --glow-magenta: 0 0 20px rgba(255, 0, 170, 0.4), 0 0 60px rgba(255, 0, 170, 0.15);
+  --glow-gold: 0 0 20px rgba(255, 208, 0, 0.4), 0 0 60px rgba(255, 208, 0, 0.15);
+  --radius: 6px;
+  --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg-deep);
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Scanline overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* Animated background grid */
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 240, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: gridShift 20s linear infinite;
+  z-index: 0;
+}
+
+@keyframes gridShift {
+  0% { transform: perspective(500px) rotateX(0deg) translateY(0); }
+  100% { transform: perspective(500px) rotateX(0deg) translateY(60px); }
+}
+
+/* Floating particles */
+.particle {
+  position: fixed;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+  animation: particleFloat linear infinite;
+  opacity: 0;
+}
+
+@keyframes particleFloat {
+  0% { transform: translateY(100vh) scale(0); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+}
+
+.container {
+  position: relative;
+  z-index: 10;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── INTRO SCREEN ── */
+.intro {
+  text-align: center;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.intro h1 {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(16px, 4vw, 28px);
+  line-height: 1.8;
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-magenta));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+  text-shadow: none;
+  filter: drop-shadow(0 0 30px rgba(0, 240, 255, 0.3));
+}
+
+.intro .subtitle {
+  font-size: 18px;
+  color: var(--text-dim);
+  font-weight: 300;
+  letter-spacing: 0.5px;
+  margin-bottom: 40px;
+}
+
+.intro .character-preview {
+  font-size: 40px;
+  letter-spacing: 12px;
+  margin-bottom: 48px;
+  animation: characterBounce 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.5));
+}
+
+@keyframes characterBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.btn-start {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 14px;
+  padding: 20px 48px;
+  background: transparent;
+  color: var(--neon-cyan);
+  border: 2px solid var(--neon-cyan);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.btn-start::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--neon-cyan);
+  transform: translateX(-101%);
+  transition: transform 0.4s ease;
+  z-index: -1;
+}
+
+.btn-start:hover {
+  color: var(--bg-deep);
+  box-shadow: var(--glow-cyan);
+}
+
+.btn-start:hover::before {
+  transform: translateX(0);
+}
+
+/* ── PROGRESS BAR ── */
+.progress-container {
+  width: 100%;
+  margin-bottom: 40px;
+  animation: fadeInUp 0.5s ease-out;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.progress-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: var(--neon-cyan);
+  letter-spacing: 1px;
+}
+
+.progress-count {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+  transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+.progress-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: -3px;
+  width: 10px;
+  height: 10px;
+  background: var(--neon-magenta);
+  border-radius: 50%;
+  box-shadow: var(--glow-magenta);
+}
+
+/* ── QUESTION CARD ── */
+.question-card {
+  width: 100%;
+  animation: questionEnter 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.question-card.exiting {
+  animation: questionExit 0.3s ease-in forwards;
+}
+
+@keyframes questionEnter {
+  0% { opacity: 0; transform: translateX(60px) scale(0.95); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes questionExit {
+  0% { opacity: 1; transform: translateX(0) scale(1); }
+  100% { opacity: 0; transform: translateX(-60px) scale(0.95); }
+}
+
+.question-number {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  color: var(--neon-magenta);
+  margin-bottom: 12px;
+  letter-spacing: 2px;
+}
+
+.question-text {
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 32px;
+  color: var(--text-primary);
+}
+
+.choices {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.choice-btn {
+  width: 100%;
+  padding: 18px 24px;
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.choice-btn .choice-key {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: var(--text-dim);
+  min-width: 20px;
+  transition: color 0.3s;
+}
+
+.choice-btn::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--neon-cyan);
+  transform: scaleY(0);
+  transition: transform 0.3s ease;
+}
+
+.choice-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: rgba(0, 240, 255, 0.2);
+  transform: translateX(6px);
+}
+
+.choice-btn:hover::before {
+  transform: scaleY(1);
+}
+
+.choice-btn:hover .choice-key {
+  color: var(--neon-cyan);
+}
+
+.choice-btn.selected {
+  background: rgba(0, 240, 255, 0.08);
+  border-color: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
+}
+
+.choice-btn.selected::before {
+  transform: scaleY(1);
+  background: var(--neon-gold);
+}
+
+.choice-btn.selected .choice-key {
+  color: var(--neon-gold);
+}
+
+/* ── RESULT SCREEN ── */
+.result-screen {
+  width: 100%;
+  text-align: center;
+  animation: resultReveal 1s ease-out;
+}
+
+@keyframes resultReveal {
+  0% { opacity: 0; transform: scale(0.8); filter: blur(10px); }
+  50% { opacity: 1; filter: blur(0); }
+  100% { transform: scale(1); }
+}
+
+.result-badge {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 10px;
+  color: var(--neon-gold);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 24px;
+  animation: pulseBadge 2s ease-in-out infinite;
+}
+
+@keyframes pulseBadge {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.result-portrait {
+  font-size: 80px;
+  margin-bottom: 24px;
+  animation: portraitFloat 3s ease-in-out infinite;
+  filter: drop-shadow(0 8px 32px rgba(0, 240, 255, 0.3));
+  position: relative;
+}
+
+.result-portrait-img {
+  width: 180px;
+  height: 180px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid var(--neon-cyan);
+  box-shadow: var(--glow-cyan), inset 0 0 30px rgba(0, 240, 255, 0.1);
+  animation: portraitFloat 3s ease-in-out infinite;
+  transition: opacity 0.6s ease;
+}
+
+.result-portrait-emoji {
+  font-size: 80px;
+  transition: opacity 0.4s ease;
+}
+
+.result-portrait-loading {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 3px solid rgba(0, 240, 255, 0.2);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 60px;
+  background: var(--bg-card);
+  position: relative;
+  overflow: hidden;
+}
+
+.result-portrait-loading::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 3px solid transparent;
+  border-top-color: var(--neon-cyan);
+  animation: spinLoader 1s linear infinite;
+}
+
+@keyframes spinLoader {
+  to { transform: rotate(360deg); }
+}
+
+.wiki-section {
+  background: var(--bg-card);
+  border: 1px solid rgba(0, 240, 255, 0.15);
+  border-left: 3px solid var(--neon-cyan);
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  text-align: left;
+  position: relative;
+}
+
+.wiki-section .wiki-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: var(--neon-cyan);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wiki-section .wiki-label img {
+  width: 20px;
+  height: 20px;
+}
+
+.wiki-section .wiki-text {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  opacity: 0.85;
+}
+
+.wiki-section .wiki-link {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--neon-cyan);
+  text-decoration: none;
+  opacity: 0.7;
+  transition: opacity var(--transition);
+}
+
+.wiki-section .wiki-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
+@keyframes portraitFloat {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-6px) rotate(1deg); }
+  75% { transform: translateY(4px) rotate(-1deg); }
+}
+
+.result-name {
+  font-family: 'Press Start 2P', monospace;
+  font-size: clamp(18px, 5vw, 32px);
+  background: linear-gradient(135deg, var(--neon-cyan), var(--neon-gold));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+  filter: drop-shadow(0 0 20px rgba(0, 240, 255, 0.3));
+}
+
+.result-game {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-bottom: 32px;
+  font-weight: 300;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.result-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 32px;
+  text-align: left;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.result-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta), var(--neon-gold));
+}
+
+.result-description {
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+  font-weight: 300;
+}
+
+.result-traits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.trait-tag {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  padding: 8px 14px;
+  border: 1px solid rgba(0, 240, 255, 0.3);
+  color: var(--neon-cyan);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.result-quote {
+  border-left: 3px solid var(--neon-magenta);
+  padding: 16px 20px;
+  font-style: italic;
+  color: var(--text-dim);
+  font-size: 15px;
+  line-height: 1.6;
+  background: rgba(255, 0, 170, 0.03);
+}
+
+.result-quote .quote-attr {
+  display: block;
+  margin-top: 8px;
+  font-style: normal;
+  font-size: 11px;
+  color: var(--neon-magenta);
+  font-family: 'Press Start 2P', monospace;
+}
+
+/* ── EXTRA INFO CARDS ── */
+.result-extras {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.extra-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 16px;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+
+.extra-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--neon-cyan);
+}
+
+.extra-card.magenta::before { background: var(--neon-magenta); }
+.extra-card.gold::before { background: var(--neon-gold); }
+.extra-card.green::before { background: var(--neon-green); }
+
+.extra-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: var(--text-dim);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.extra-value {
+  font-size: 14px;
+  color: var(--text-primary);
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+.result-funfact {
+  background: rgba(255, 208, 0, 0.03);
+  border: 1px solid rgba(255, 208, 0, 0.15);
+  padding: 20px 24px;
+  margin-top: 24px;
+  text-align: left;
+  position: relative;
+}
+
+.result-funfact::before {
+  content: '💡';
+  position: absolute;
+  top: -12px;
+  left: 16px;
+  font-size: 20px;
+  background: var(--bg-deep);
+  padding: 0 8px;
+}
+
+.funfact-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: var(--neon-gold);
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.funfact-text {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+.result-weakness {
+  background: rgba(255, 0, 170, 0.03);
+  border: 1px solid rgba(255, 0, 170, 0.15);
+  padding: 20px 24px;
+  margin-top: 16px;
+  text-align: left;
+  position: relative;
+}
+
+.result-weakness::before {
+  content: '⚠️';
+  position: absolute;
+  top: -12px;
+  left: 16px;
+  font-size: 20px;
+  background: var(--bg-deep);
+  padding: 0 8px;
+}
+
+.weakness-label {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: var(--neon-magenta);
+  letter-spacing: 2px;
+  margin-bottom: 10px;
+}
+
+.weakness-text {
+  font-size: 14px;
+  color: var(--text-primary);
+  line-height: 1.7;
+  font-weight: 300;
+}
+
+@media (max-width: 600px) {
+  .result-extras { grid-template-columns: 1fr; }
+}
+
+.score-bar-container {
+  margin-top: 32px;
+  text-align: left;
+}
+
+.score-bar-title {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+  letter-spacing: 2px;
+}
+
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  opacity: 0;
+  animation: scoreReveal 0.4s ease-out forwards;
+}
+
+.score-row .score-char {
+  font-size: 12px;
+  min-width: 100px;
+  text-align: right;
+  color: var(--text-dim);
+  font-weight: 300;
+}
+
+.score-row .score-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+
+.score-row .score-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-magenta));
+  transition: width 1s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 0;
+}
+
+.score-row.winner .score-char {
+  color: var(--neon-gold);
+  font-weight: 600;
+}
+
+.score-row.winner .score-bar-fill {
+  background: linear-gradient(90deg, var(--neon-gold), var(--neon-cyan));
+}
+
+.score-row .score-pct {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  color: var(--text-dim);
+  min-width: 36px;
+}
+
+@keyframes scoreReveal {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.btn-restart {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 11px;
+  padding: 16px 40px;
+  margin-top: 40px;
+  background: transparent;
+  color: var(--neon-magenta);
+  border: 2px solid var(--neon-magenta);
+  cursor: pointer;
+  transition: var(--transition);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-restart::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--neon-magenta);
+  transform: translateX(-101%);
+  transition: transform 0.4s ease;
+  z-index: -1;
+}
+
+.btn-restart:hover {
+  color: var(--bg-deep);
+  box-shadow: var(--glow-magenta);
+}
+
+.btn-restart:hover::before {
+  transform: translateX(0);
+}
+
+/* ── UTILITIES ── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hidden { display: none !important; }
+
+/* ── MOBILE ── */
+@media (max-width: 600px) {
+  .container { padding: 24px 16px; }
+  .question-text { font-size: 18px; }
+  .choice-btn { padding: 14px 16px; font-size: 14px; }
+  .result-card { padding: 24px 18px; }
+  .result-portrait-emoji { font-size: 60px; }
+  .result-portrait-img { width: 140px; height: 140px; }
+  .result-portrait-loading { width: 140px; height: 140px; font-size: 50px; }
+  .score-row .score-char { min-width: 70px; font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div id="particles"></div>
+
+<div class="container">
+  <!-- INTRO -->
+  <div id="intro" class="intro">
+    <div class="character-preview">⚔️🎮🛡️🔫🗡️🏹💙🥷</div>
+    <h1>Quel Personnage<br>de Jeu Vidéo<br>Es-Tu ?</h1>
+    <p class="subtitle">20 questions aléatoires parmi 50+ pour révéler le héros qui sommeille en toi</p>
+    <button class="btn-start" onclick="startQuiz()">Commencer</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz" class="hidden" style="width:100%">
+    <div class="progress-container">
+      <div class="progress-header">
+        <span class="progress-label">Progression</span>
+        <span class="progress-count" id="progressCount">1 / 15</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill" style="width:6.66%"></div>
+      </div>
+    </div>
+    <div id="questionArea" class="question-card"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result" class="hidden result-screen"></div>
+</div>
+
+<script>
+const CHARACTERS = {
+  mario: {
+    name: "Mario",
+    game: "Super Mario Bros.",
+    emoji: "🍄",
+    portrait: "👨‍🔧🍄⭐",
+    description: "Tu es une personne optimiste, courageuse et infatigable. Quand un problème se présente, tu fonces tête baissée sans jamais te décourager. Tu as un grand cœur et tu es toujours prêt à aider ceux que tu aimes, même si cela signifie traverser des mondes entiers. Ta simplicité et ta détermination sont tes plus grandes forces.",
+    traits: ["Optimiste", "Courageux", "Loyal", "Infatigable"],
+    quote: "It's-a me, Mario!",
+    quoteAttr: "— Mario",
+    rival: "Sonic",
+    ally: "Kirby",
+    funFact: "Shigeru Miyamoto a nommé Mario d'après Mario Segale, le propriétaire de l'entrepôt de Nintendo of America qui est venu réclamer son loyer en retard.",
+    soundtrack: "Super Mario Bros. Theme — Koji Kondo",
+    element: "Feu 🔥",
+    faiblesse: "Tu es trop naïf — tu fais confiance à tout le monde, même à ceux qui t'ont trahi cent fois."
+  },
+  link: {
+    name: "Link",
+    game: "The Legend of Zelda",
+    emoji: "🧝",
+    portrait: "🧝‍♂️🗡️🛡️",
+    description: "Silencieux mais déterminé, tu es un explorateur dans l'âme. Tu préfères agir plutôt que parler, et tu résous les problèmes avec ingéniosité et patience. Le monde est pour toi un immense puzzle à découvrir. Tu es brave sans être téméraire, et ta curiosité te pousse toujours vers de nouveaux horizons.",
+    traits: ["Ingénieux", "Brave", "Curieux", "Déterminé"],
+    quote: "...",
+    quoteAttr: "— Link (évidemment)",
+    rival: "Sekiro",
+    ally: "Samus Aran",
+    funFact: "Link est gaucher dans presque tous les jeux, sauf sur Wii (miroir) et dans Breath of the Wild — Nintendo l'a rendu droitier pour le grand public.",
+    soundtrack: "Great Fairy Fountain — The Legend of Zelda",
+    element: "Vent 💨",
+    faiblesse: "Tu casses les pots des gens sans jamais t'excuser."
+  },
+  kratos: {
+    name: "Kratos",
+    game: "God of War",
+    emoji: "⚔️",
+    portrait: "🪓💀⛓️",
+    description: "Tu es une force de la nature, intense et passionné. Derrière ta façade dure se cache une profondeur émotionnelle que peu de gens soupçonnent. Tu as appris de tes erreurs passées et tu cherches à devenir meilleur chaque jour. Quand tu protèges quelqu'un, rien au monde ne peut t'arrêter.",
+    traits: ["Intense", "Protecteur", "Résilient", "Profond"],
+    quote: "Ne sois pas désolé. Sois meilleur.",
+    quoteAttr: "— Kratos",
+    rival: "Doom Slayer",
+    ally: "Joel Miller",
+    funFact: "Christopher Judge (voix de Kratos dans God of War 2018) a aussi joué Teal'c dans Stargate SG-1 pendant 10 saisons.",
+    soundtrack: "God of War Main Theme — Bear McCreary",
+    element: "Feu 🔥",
+    faiblesse: "Ta colère te consume — tu détruis parfois ce que tu voulais protéger."
+  },
+  masterchief: {
+    name: "Master Chief",
+    game: "Halo",
+    emoji: "🪖",
+    portrait: "🤖🔫💚",
+    description: "Tu es un leader né, calme sous la pression et toujours concentré sur la mission. Les autres comptent sur toi dans les moments difficiles, et tu ne les déçois jamais. Tu es méthodique, discipliné et tu gardes la tête froide même quand tout s'effondre autour de toi. La chance te sourit souvent.",
+    traits: ["Leader", "Discipliné", "Stoïque", "Fiable"],
+    quote: "J'ai besoin d'une arme.",
+    quoteAttr: "— Master Chief",
+    rival: "Doom Slayer",
+    ally: "Snake",
+    funFact: "Le visage de Master Chief n'a jamais été officiellement montré — Bungie puis 343 Industries considèrent que le joueur EST Master Chief.",
+    soundtrack: "Halo Theme — Martin O'Donnell",
+    element: "Technologie ⚡",
+    faiblesse: "Tu es tellement concentré sur la mission que tu oublies de vivre pour toi-même."
+  },
+  lara: {
+    name: "Lara Croft",
+    game: "Tomb Raider",
+    emoji: "🏺",
+    portrait: "🧗‍♀️🔦💎",
+    description: "Aventurière, intellectuelle et intrépide — tu combines l'amour du savoir avec le goût du risque. Tu es aussi à l'aise dans une bibliothèque que suspendue au-dessus d'un précipice. Ton intelligence et ta débrouillardise te tirent de toutes les situations, et tu ne recules devant aucun défi.",
+    traits: ["Aventurière", "Intelligente", "Intrépide", "Cultivée"],
+    quote: "L'aventure extraordinaire est celle qui arrive aux gens ordinaires.",
+    quoteAttr: "— Lara Croft",
+    rival: "Nathan Drake",
+    ally: "Aloy",
+    funFact: "Lara Croft a été la première héroïne de jeu vidéo à apparaître sur la couverture du magazine TIME en 1999.",
+    soundtrack: "Tomb Raider Main Theme — Nathan McCree",
+    element: "Terre 🪨",
+    faiblesse: "Tu es obsédée par tes objectifs — tu oublies parfois que certaines choses ne devraient pas être déterrées."
+  },
+  geralt: {
+    name: "Geralt de Riv",
+    game: "The Witcher 3",
+    emoji: "🐺",
+    portrait: "🐺⚔️🧪",
+    description: "Tu es pragmatique, sarcastique et doté d'un sens moral complexe. Tu vois le monde en nuances de gris et tu refuses de choisir entre deux maux — tu cherches une troisième voie. Sous ton cynisme apparent se cache quelqu'un qui se soucie profondément des autres, même si tu ne l'admettras jamais.",
+    traits: ["Pragmatique", "Sarcastique", "Nuancé", "Indépendant"],
+    quote: "Le mal est le mal. Moindre, majeur, mitoyen — peu importe.",
+    quoteAttr: "— Geralt de Riv",
+    rival: "Arthur Morgan",
+    ally: "Snake",
+    funFact: "Geralt est daltonien dans les livres — il ne voit pas les couleurs. Le jeu a ignoré ce détail pour des raisons visuelles.",
+    soundtrack: "Silver for Monsters — The Witcher 3",
+    element: "Lune 🌙",
+    faiblesse: "Tu te caches derrière le cynisme pour éviter de montrer que tu tiens aux gens."
+  },
+  snake: {
+    name: "Solid Snake",
+    game: "Metal Gear Solid",
+    emoji: "🐍",
+    portrait: "📦🐍🎖️",
+    description: "Discret, stratégique et profondément philosophe. Tu préfères observer avant d'agir et tu excelles dans l'art de passer inaperçu. Tu remets constamment en question l'autorité et les systèmes qui t'entourent. Ta force réside dans ta capacité à t'adapter et à trouver des solutions que personne d'autre n'envisage.",
+    traits: ["Stratège", "Discret", "Philosophe", "Adaptable"],
+    quote: "Nous ne sommes pas des outils du gouvernement ou de qui que ce soit. Se battre était le seul choix qui nous restait.",
+    quoteAttr: "— Solid Snake",
+    rival: "Sekiro",
+    ally: "Master Chief",
+    funFact: "Hideo Kojima a nommé Snake d'après Snake Plissken du film 'Escape from New York' — et le film fait même un clin d'œil dans MGS2.",
+    soundtrack: "The Best Is Yet To Come — Metal Gear Solid",
+    element: "Ombre 🌑",
+    faiblesse: "Tu fais tellement peu confiance au système que tu finis par te retrouver seul."
+  },
+  samus: {
+    name: "Samus Aran",
+    game: "Metroid",
+    emoji: "🚀",
+    portrait: "🦾🚀⚡",
+    description: "Indépendante et solitaire, tu es une force silencieuse qui n'a besoin de personne pour accomplir l'impossible. Tu es méthodique dans ton approche, tu explores chaque recoin avant d'avancer. Ta solitude est ta force — elle te permet de te concentrer et d'agir avec une précision chirurgicale.",
+    traits: ["Indépendante", "Méthodique", "Solitaire", "Précise"],
+    quote: "La mission est tout ce qui compte.",
+    quoteAttr: "— Samus Aran",
+    rival: "Aloy",
+    ally: "Link",
+    funFact: "La révélation que Samus est une femme à la fin du premier Metroid (1986) est considérée comme l'un des plus grands twists de l'histoire du jeu vidéo.",
+    soundtrack: "Brinstar Theme — Metroid",
+    element: "Plasma ⚡",
+    faiblesse: "Ta solitude est ton armure, mais aussi ta prison — tu refuses de laisser les gens s'approcher."
+  },
+  cloud: {
+    name: "Cloud Strife",
+    game: "Final Fantasy VII",
+    emoji: "☁️",
+    portrait: "⚡🗡️☁️",
+    description: "Complexe et introspectif, tu portes le poids du monde sur tes épaules — parfois littéralement. Tu doutes de toi-même plus que tu ne le devrais, mais quand le moment est venu, tu te lèves et tu te bats avec une intensité qui surprend tout le monde, y compris toi-même. Tes amis sont ta vraie force.",
+    traits: ["Introspectif", "Complexe", "Loyal", "Intense"],
+    quote: "Je ne suis pas un héros. Je ne l'ai jamais été.",
+    quoteAttr: "— Cloud Strife",
+    rival: "Cloud Strife",
+    ally: "Mario",
+    funFact: "Cloud devait être un personnage secondaire dans FF7 — le héros original était un détective new-yorkais. Le projet a radicalement changé.",
+    soundtrack: "Aerith's Theme — Final Fantasy VII",
+    element: "Foudre ⚡",
+    faiblesse: "Tu doutes tellement de toi que tu risques de devenir ce que tu redoutes — quelqu'un qui ne se bat plus."
+  },
+  arthur: {
+    name: "Arthur Morgan",
+    game: "Red Dead Redemption 2",
+    emoji: "🤠",
+    portrait: "🐴🤠🌅",
+    description: "Tu es quelqu'un de fondamentalement bon, même si le monde t'a parfois poussé dans des directions sombres. Tu as un sens aigu de la justice et de la loyauté, et tu réfléchis beaucoup à ce que signifie vivre une bonne vie. Tu es terre-à-terre, honnête et tu apprécies les choses simples.",
+    traits: ["Honnête", "Réfléchi", "Terre-à-terre", "Juste"],
+    quote: "J'ai peur de pas avoir donné assez. Tu donnes suffisamment, faut croire.",
+    quoteAttr: "— Arthur Morgan",
+    rival: "Geralt de Riv",
+    ally: "Joel Miller",
+    funFact: "Roger Clark a enregistré plus de 500 000 lignes de dialogue pour Arthur Morgan — le plus grand rôle vocal de l'histoire du jeu vidéo.",
+    soundtrack: "That's The Way It Is — Daniel Lanois",
+    element: "Terre 🪨",
+    faiblesse: "Tu restes loyal à des gens qui ne le méritent pas — ta fidélité est aveugle."
+  },
+  ezio: {
+    name: "Ezio Auditore",
+    game: "Assassin's Creed II",
+    emoji: "🦅",
+    portrait: "🦅🗡️🎭",
+    description: "Charismatique, charmeur et brillant. Tu as la capacité rare de combiner l'élégance et l'efficacité. Tu crois en la liberté et en la justice, et tu es prêt à tout risquer pour tes convictions. Les gens sont naturellement attirés par ton assurance et ton charme, mais tu sais aussi être redoutablement sérieux.",
+    traits: ["Charismatique", "Charmeur", "Idéaliste", "Agile"],
+    quote: "Rien n'est vrai, tout est permis.",
+    quoteAttr: "— Ezio Auditore",
+    rival: "Sonic",
+    ally: "Nathan Drake",
+    funFact: "Ezio est le seul personnage d'Assassin's Creed à avoir trois jeux complets — on suit sa vie de 17 ans à 65 ans.",
+    soundtrack: "Ezio's Family — Jesper Kyd",
+    element: "Air 💨",
+    faiblesse: "Tu charmes tout le monde mais tu gardes le vrai toi caché — l'intimité te fait peur."
+  },
+  kirby: {
+    name: "Kirby",
+    game: "Kirby's Dream Land",
+    emoji: "🩷",
+    portrait: "⭐🩷🌈",
+    description: "Ne te fie pas aux apparences — sous ton air adorable se cache une puissance incroyable. Tu es joyeux, gourmand et tu abordes la vie avec une simplicité désarmante. Tu t'adaptes à toutes les situations en absorbant ce qui t'entoure, et ta bonne humeur est contagieuse. Le monde est meilleur avec toi.",
+    traits: ["Joyeux", "Adaptable", "Puissant", "Adorable"],
+    quote: "Poyo!",
+    quoteAttr: "— Kirby",
+    rival: "Meta Knight",
+    ally: "Mario",
+    funFact: "Kirby a été créé comme placeholder temporaire par Masahiro Sakurai... et est resté tel quel car tout le monde l'adorait.",
+    soundtrack: "Green Greens — Kirby's Dream Land",
+    element: "Étoile ⭐",
+    faiblesse: "La gourmandise — tu te laisses parfois distraire par un bon repas au pire moment."
+  },
+  aloy: {
+    name: "Aloy",
+    game: "Horizon Zero Dawn",
+    emoji: "🏹",
+    portrait: "🏹🤖🌿",
+    description: "Tu es une chercheuse de vérité née, rejetée par le monde mais déterminée à prouver ta valeur. Tu combines une intelligence exceptionnelle avec des compétences de survie hors pair. Tu remets en question les traditions et les dogmes, préférant la science et la raison à la superstition. Ta curiosité est ton moteur.",
+    traits: ["Curieuse", "Résiliente", "Scientifique", "Rebelle"],
+    quote: "Je ne cherche pas leur approbation. Je cherche des réponses.",
+    quoteAttr: "— Aloy",
+    rival: "Samus Aran",
+    ally: "Lara Croft",
+    funFact: "Aloy a été inspirée par des guerrières historiques comme Boudica et des héroïnes de sci-fi comme Sarah Connor.",
+    soundtrack: "Aloy's Theme — Horizon Zero Dawn",
+    element: "Nature 🌿",
+    faiblesse: "Tu as du mal à accepter l'aide — tu veux tout faire toute seule."
+  },
+  joel: {
+    name: "Joel Miller",
+    game: "The Last of Us",
+    emoji: "🎸",
+    portrait: "🎸🔨💔",
+    description: "Tu es quelqu'un de profondément marqué par la vie, mais cette douleur t'a rendu plus fort et plus protecteur. Tu ferais littéralement n'importe quoi pour ceux que tu considères comme ta famille. Tu es pragmatique, parfois brutal dans tes choix, mais toujours guidé par un amour féroce.",
+    traits: ["Protecteur", "Pragmatique", "Endurci", "Loyal"],
+    quote: "Si le Seigneur m'avait donné une deuxième chance, je referais exactement la même chose.",
+    quoteAttr: "— Joel Miller",
+    rival: "Kratos",
+    ally: "Arthur Morgan",
+    funFact: "Troy Baker a improvisé la scène finale de The Last of Us — sa voix tremblante était réelle.",
+    soundtrack: "The Path (A New Beginning) — Gustavo Santaolalla",
+    element: "Terre 🪨",
+    faiblesse: "Tu refuses de lâcher prise — même quand c'est la chose juste à faire."
+  },
+  sonic: {
+    name: "Sonic",
+    game: "Sonic the Hedgehog",
+    emoji: "💙",
+    portrait: "💨💙🌀",
+    description: "Rapide, impatient et irrésistiblement cool — tu vis à cent à l'heure et tu détestes attendre. Tu as un sens inné de la justice et tu ne supportes pas de voir quelqu'un se faire opprimer. Ta confiance en toi est contagieuse, et ton énergie débordante inspire tout le monde autour de toi.",
+    traits: ["Rapide", "Confiant", "Rebelle", "Loyal"],
+    quote: "Je suis Sonic. Sonic the Hedgehog !",
+    quoteAttr: "— Sonic",
+    rival: "Ezio Auditore",
+    ally: "Kirby",
+    funFact: "Le design original de Sonic incluait des crocs, une petite amie humaine et une bande de rock. SEGA a bien fait de simplifier.",
+    soundtrack: "Escape from the City — Sonic Adventure 2",
+    element: "Vent 💨",
+    faiblesse: "L'impatience — tu veux tout, tout de suite, et tu bâcles parfois les détails."
+  },
+  nathan: {
+    name: "Nathan Drake",
+    game: "Uncharted",
+    emoji: "🗺️",
+    portrait: "🗺️💰🧗",
+    description: "Charmeur, malin et un brin casse-cou — tu es le genre de personne à qui il arrive des aventures impossibles un mardi après-midi. Tu combines humour et bravoure avec une aisance naturelle. Tu mens parfois, tu improvises souvent, mais au fond tu as un cœur en or.",
+    traits: ["Charmeur", "Débrouillard", "Téméraire", "Drôle"],
+    quote: "Oh non, pas encore...",
+    quoteAttr: "— Nathan Drake (en tombant d'un train)",
+    rival: "Lara Croft",
+    ally: "Ezio Auditore",
+    funFact: "Nathan Drake devait s'appeler 'Jason' à l'origine, mais Naughty Dog a changé pour éviter toute confusion avec Jason Bourne.",
+    soundtrack: "Nate's Theme — Uncharted",
+    element: "Eau 🌊",
+    faiblesse: "Tu as un problème avec la vérité — mentir est devenu un réflexe, même quand ce n'est pas nécessaire."
+  },
+  doomslayer: {
+    name: "Doom Slayer",
+    game: "DOOM Eternal",
+    emoji: "👹",
+    portrait: "🔥💀🪖",
+    description: "Aucune pitié. Aucun compromis. Tu es la rage incarnée, canalisée dans un but unique : éliminer le mal. Tu ne parles pas, tu agis. Les démons te craignent plus que tu ne les crains. Sous cette furie inébranlable se cache une mission noble — protéger l'humanité, coûte que coûte.",
+    traits: ["Implacable", "Furieux", "Indestructible", "Silencieux"],
+    quote: "...",
+    quoteAttr: "— Doom Slayer (il ne parle pas, il détruit)",
+    rival: "Master Chief",
+    ally: "Kratos",
+    funFact: "Le Doom Slayer est si puissant dans le lore qu'il a été enfermé dans un sarcophage par les démons — non pas pour le tuer, mais par peur.",
+    soundtrack: "BFG Division — Mick Gordon",
+    element: "Feu 🔥",
+    faiblesse: "Tu ne connais qu'une seule réponse à tous les problèmes : la violence."
+  },
+  sekiro: {
+    name: "Sekiro",
+    game: "Sekiro: Shadows Die Twice",
+    emoji: "🥷",
+    portrait: "🥷⚔️🌸",
+    description: "Discipliné, honneur et persévérance — tu incarnes la voie du shinobi. Chaque défaite est une leçon, chaque mort une renaissance. Tu es patient, précis et d'une loyauté absolue. Tu vis selon un code strict, et cette rigueur te rend plus fort que n'importe quelle armée.",
+    traits: ["Discipliné", "Loyal", "Patient", "Précis"],
+    quote: "Les ombres meurent deux fois.",
+    quoteAttr: "— Sekiro",
+    rival: "Snake",
+    ally: "Link",
+    funFact: "FromSoftware a créé un système de combat entièrement basé sur le rythme — chaque boss est comme un duel musical.",
+    soundtrack: "Ashina Reservoir — Sekiro",
+    element: "Lame 🗡️",
+    faiblesse: "Tu es trop rigide dans tes principes — le monde n'est pas toujours noir ou blanc."
+  },
+  luigi: {
+    name: "Luigi",
+    game: "Super Mario Bros.",
+    emoji: "💚",
+    portrait: "💚👻😰",
+    description: "Tu es le héros improbable — celui qui tremble de peur mais qui y va quand même. Toujours dans l'ombre de quelqu'un, tu doutes de toi en permanence, mais ta bravoure est d'autant plus admirable qu'elle te coûte. Tu es drôle sans le vouloir, attachant et plus courageux que tu ne le crois.",
+    traits: ["Anxieux", "Courageux", "Drôle", "Sous-estimé"],
+    quote: "Oh Mama mia...",
+    quoteAttr: "— Luigi (en tremblant)",
+    rival: "Waluigi",
+    ally: "Mario",
+    funFact: "Luigi's Mansion a failli s'appeler 'Luigi's Nightmare'. Nintendo a préféré un ton plus léger, mais le jeu reste l'un des plus sombres de la franchise.",
+    soundtrack: "Luigi's Mansion Theme — Kazumi Totaka",
+    element: "Fantôme 👻",
+    faiblesse: "Tu te compares constamment aux autres — tu ne vois jamais ta propre valeur."
+  },
+  zelda: {
+    name: "Zelda",
+    game: "The Legend of Zelda",
+    emoji: "👸",
+    portrait: "👸✨🏰",
+    description: "Sage, puissante et sacrificielle — tu portes le poids d'un royaume sur tes épaules avec grâce. Tu es brillante, stratège, et tu sacrifies ton propre bonheur pour le bien de tous. Ta force n'est pas dans tes muscles mais dans ta sagesse et ta capacité à inspirer les autres.",
+    traits: ["Sage", "Sacrificielle", "Stratège", "Inspirante"],
+    quote: "Le courage naît non pas de l'absence de peur, mais de la volonté de la surmonter.",
+    quoteAttr: "— Princesse Zelda",
+    rival: "Ganondorf",
+    ally: "Link",
+    funFact: "Zelda a été nommée d'après Zelda Fitzgerald, l'épouse de l'écrivain F. Scott Fitzgerald, car Miyamoto trouvait le nom 'élégant'.",
+    soundtrack: "Zelda's Lullaby — The Legend of Zelda",
+    element: "Lumière ✨",
+    faiblesse: "Tu te sacrifies tellement pour les autres que tu oublies de vivre pour toi-même."
+  },
+  tifa: {
+    name: "Tifa Lockhart",
+    game: "Final Fantasy VII",
+    emoji: "🥊",
+    portrait: "🥊❤️🌟",
+    description: "Tu es le roc sur lequel tout le monde s'appuie. Forte physiquement et émotionnellement, tu combines douceur et puissance avec une aisance naturelle. Tu es celle qui tient le groupe ensemble dans les moments les plus sombres, et ta loyauté est inébranlable.",
+    traits: ["Forte", "Bienveillante", "Loyale", "Ancrée"],
+    quote: "Les mots ne sont pas les seuls moyens de dire ce qu'on pense.",
+    quoteAttr: "— Tifa Lockhart",
+    rival: "Samus Aran",
+    ally: "Cloud Strife",
+    funFact: "Tifa devait être la protagoniste principale de FF7 dans une version préliminaire du scénario, avant que Cloud ne prenne le devant de la scène.",
+    soundtrack: "Tifa's Theme — Final Fantasy VII",
+    element: "Terre 🪨",
+    faiblesse: "Tu prends soin de tout le monde sauf de toi — et tu gardes ta propre douleur en silence."
+  },
+  ellie: {
+    name: "Ellie Williams",
+    game: "The Last of Us",
+    emoji: "🦋",
+    portrait: "🦋🔪🎸",
+    description: "Née dans un monde brisé, tu es à la fois dure et tendre. Ton humour acide cache une sensibilité profonde. Tu as grandi trop vite, tu as vu trop de choses, mais tu refuses de laisser le monde te voler ton humanité. Ta rage et ton amour brûlent avec la même intensité.",
+    traits: ["Féroce", "Drôle", "Sensible", "Résiliente"],
+    quote: "Après tout ce qu'on a traversé... tout ce que j'ai fait. Ça peut pas être pour rien.",
+    quoteAttr: "— Ellie",
+    rival: "Abby Anderson",
+    ally: "Joel Miller",
+    funFact: "Ashley Johnson a fait le mocap et la voix d'Ellie — elle a pleuré pour de vrai dans plusieurs scènes, et Naughty Dog a gardé les prises.",
+    soundtrack: "All Gone (No Escape) — Gustavo Santaolalla",
+    element: "Feu 🔥",
+    faiblesse: "La vengeance te consume — tu ne sais pas quand t'arrêter."
+  },
+  pikachu: {
+    name: "Pikachu",
+    game: "Pokémon",
+    emoji: "⚡",
+    portrait: "⚡🐭💛",
+    description: "Tu es un rayon de soleil vivant — petit mais électrique, adorable mais redoutable. Ta loyauté envers tes amis est absolue, et tu refuses de te conformer aux attentes des autres. Tu restes toi-même quoi qu'il arrive, et cette authenticité te rend irrésistible.",
+    traits: ["Loyal", "Électrique", "Adorable", "Rebelle"],
+    quote: "Pika Pika !",
+    quoteAttr: "— Pikachu",
+    rival: "Mewtwo",
+    ally: "Kirby",
+    funFact: "Pikachu devait être le troisième starter Pokémon, pas la mascotte. C'est l'anime qui l'a propulsé — Ash devait avoir un Clefairy à l'origine.",
+    soundtrack: "Pokémon Theme — Jason Paige",
+    element: "Foudre ⚡",
+    faiblesse: "Tu refuses de changer ou d'évoluer, même quand ce serait bénéfique — tu es têtu comme une mule."
+  },
+  bowser: {
+    name: "Bowser",
+    game: "Super Mario Bros.",
+    emoji: "🐢",
+    portrait: "🐢🔥👑",
+    description: "Tu es le chef né que personne n'a demandé mais que tout le monde respecte. Ambitieux, têtu et secrètement romantique. Tu échoues encore et encore mais tu reviens toujours avec un plan encore plus grandiose. Sous ta carapace de dur à cuire, tu es un père dévoué et un leader passionné.",
+    traits: ["Ambitieux", "Persistant", "Leader", "Passionné"],
+    quote: "GAHAHA ! Cette fois-ci, c'est la bonne !",
+    quoteAttr: "— Bowser (pour la 847ème fois)",
+    rival: "Mario",
+    ally: "Ganondorf",
+    funFact: "Dans Super Mario RPG, Bowser rejoint l'équipe de Mario — c'est l'un des meilleurs moments de la franchise, montrant son côté attachant.",
+    soundtrack: "King Bowser — Super Mario Bros. 3",
+    element: "Feu 🔥",
+    faiblesse: "Tu ne sais pas accepter un 'non' — ton obsession te rend aveugle."
+  },
+  dante: {
+    name: "Dante",
+    game: "Devil May Cry",
+    emoji: "😈",
+    portrait: "😈🗡️🍕",
+    description: "Style, arrogance et pizza — tu vis ta vie comme un spectacle permanent. Derrière tes blagues et ta nonchalance se cache un guerrier redoutable qui ne montre jamais sa vraie douleur. Tu transformes chaque combat en danse, et chaque tragédie en punchline.",
+    traits: ["Stylé", "Arrogant", "Drôle", "Redoutable"],
+    quote: "Jackpot!",
+    quoteAttr: "— Dante",
+    rival: "Vergil",
+    ally: "Nathan Drake",
+    funFact: "Dante a été inspiré par le manga Cobra et le personnage de Dante Alighieri. Kamiya voulait créer le 'personnage le plus cool de tous les temps'.",
+    soundtrack: "Devils Never Cry — Devil May Cry 3",
+    element: "Feu 🔥",
+    faiblesse: "Tu utilises l'humour comme armure — personne ne voit quand tu souffres vraiment."
+  },
+  deuxb: {
+    name: "2B",
+    game: "NieR: Automata",
+    emoji: "🤖",
+    portrait: "🤖⚔️🌸",
+    description: "Tu es tiraillée entre le devoir et les émotions. On t'a dit de ne rien ressentir, mais tout en toi hurle le contraire. Tu es élégante, mortelle, et profondément mélancolique. Ta quête de sens dans un monde absurde te rend à la fois fascinante et tragique.",
+    traits: ["Mélancolique", "Gracieuse", "Dévouée", "Conflictuelle"],
+    quote: "Les émotions sont interdites.",
+    quoteAttr: "— 2B (qui ne respecte pas cette règle)",
+    rival: "Samus Aran",
+    ally: "Cloud Strife",
+    funFact: "Yoko Taro a dit que 2B a été designée pour 'être jolie' — mais le vrai twist est que son numéro signifie qu'elle est un modèle d'exécution, pas de combat.",
+    soundtrack: "Weight of the World — NieR: Automata",
+    element: "Néant 🕳️",
+    faiblesse: "Tu réprimes tes émotions jusqu'au point de rupture — et quand ça craque, ça craque violemment."
+  },
+  crash: {
+    name: "Crash Bandicoot",
+    game: "Crash Bandicoot",
+    emoji: "🌀",
+    portrait: "🌀🥭🤪",
+    description: "Chaotique, imprévisible et bizarrement attachant — tu es le genre de personne qui fonce dans un mur, se relève, et recommence en rigolant. Tu n'as aucun plan mais une énergie illimitée. Les gens ne savent jamais ce que tu vas faire, et honnêtement, toi non plus.",
+    traits: ["Chaotique", "Énergique", "Imprévisible", "Attachant"],
+    quote: "WOAH!",
+    quoteAttr: "— Crash Bandicoot",
+    rival: "Sonic",
+    ally: "Kirby",
+    funFact: "Crash s'appelait 'Willy the Wombat' pendant le développement. Naughty Dog l'a renommé juste avant la sortie.",
+    soundtrack: "Crash Bandicoot Theme — Josh Mancell",
+    element: "Chaos 🌀",
+    faiblesse: "Tu es tellement impulsif que tu crées plus de problèmes que tu n'en résous."
+  },
+  ryu: {
+    name: "Ryu",
+    game: "Street Fighter",
+    emoji: "🥋",
+    portrait: "🥋🔵👊",
+    description: "La voie du guerrier est ta seule raison de vivre. Tu es simple, humble et entièrement dédié à ton art. Tu ne cherches ni gloire ni richesse — juste le prochain combat, le prochain défi. Ta discipline est inspirante, mais elle fait de toi quelqu'un de difficile à cerner émotionnellement.",
+    traits: ["Humble", "Discipliné", "Déterminé", "Simple"],
+    quote: "Le combat est tout ce que je connais.",
+    quoteAttr: "— Ryu",
+    rival: "Sekiro",
+    ally: "Kratos",
+    funFact: "Le Hadouken de Ryu est devenu l'attaque la plus iconique du jeu vidéo — son animation a été créée en seulement 3 frames dans le Street Fighter original.",
+    soundtrack: "Ryu Stage Theme — Street Fighter II",
+    element: "Vent 💨",
+    faiblesse: "Tu vis pour le combat au point d'en oublier tout le reste — les relations, le repos, la joie."
+  },
+  sephiroth: {
+    name: "Sephiroth",
+    game: "Final Fantasy VII",
+    emoji: "🪶",
+    portrait: "🪶🗡️🖤",
+    description: "Tu es brillant, magnétique et dangereux. Tu as découvert une vérité sur toi-même qui t'a brisé, et au lieu de guérir, tu as choisi de brûler le monde. Ta grandeur est indéniable, mais elle est corrompue par la douleur et la folie. Tu fascines autant que tu terrifies.",
+    traits: ["Brillant", "Magnétique", "Destructeur", "Brisé"],
+    quote: "Je ne suis pas un souvenir.",
+    quoteAttr: "— Sephiroth",
+    rival: "Cloud Strife",
+    ally: "Bowser",
+    funFact: "Sephiroth n'apparaît que quelques heures dans FF7, mais il est considéré comme le plus grand méchant du jeu vidéo. Son thème 'One-Winged Angel' est un chœur latin.",
+    soundtrack: "One-Winged Angel — Final Fantasy VII",
+    element: "Ténèbres 🖤",
+    faiblesse: "Tu as laissé ta douleur te définir — tu aurais pu être un héros, mais tu as choisi la destruction."
+  },
+  cj: {
+    name: "CJ",
+    game: "GTA: San Andreas",
+    emoji: "🚗",
+    portrait: "🚗💪🏘️",
+    description: "Tu es un survivant des rues, pragmatique et débrouillard. Tu connais la valeur de la loyauté familiale et tu te bats pour les tiens, même quand le système est contre toi. Tu t'adaptes à tout — tu passes du gangster au pilote d'avion sans sourciller. Polyvalent et résilient.",
+    traits: ["Débrouillard", "Loyal", "Adaptable", "Résilient"],
+    quote: "Ah shit, here we go again.",
+    quoteAttr: "— CJ",
+    rival: "Nathan Drake",
+    ally: "Arthur Morgan",
+    funFact: "Young Maylay, le doubleur de CJ, a été recruté par hasard — il rappait dans la rue quand un développeur de Rockstar l'a entendu.",
+    soundtrack: "San Andreas Theme — Michael Hunter",
+    element: "Rue 🏙️",
+    faiblesse: "Tu fais confiance aux mauvaises personnes — et tu te fais trahir encore et encore."
+  },
+  bayonetta: {
+    name: "Bayonetta",
+    game: "Bayonetta",
+    emoji: "🌙",
+    portrait: "🌙💋🦇",
+    description: "Provocante, puissante et absolument fabuleuse — tu es un spectacle à toi toute seule. Tu refuses de t'excuser pour qui tu es, et tu transforms chaque situation en performance. Sous le glamour se cache une guerrière féroce avec un cœur plus grand qu'elle ne veut l'admettre.",
+    traits: ["Provocante", "Puissante", "Glamour", "Indépendante"],
+    quote: "Si tu veux me toucher, il va falloir que tu fasses mieux que ça.",
+    quoteAttr: "— Bayonetta",
+    rival: "Dante",
+    ally: "Lara Croft",
+    funFact: "Le design de Bayonetta a été créé par Mari Shimazaki — ses cheveux sont littéralement ses vêtements et son arme.",
+    soundtrack: "Mysterious Destiny — Bayonetta",
+    element: "Lune 🌙",
+    faiblesse: "Tu ne laisses jamais tomber le masque — personne ne voit la vraie toi derrière la performance."
+  },
+  raiden: {
+    name: "Raiden",
+    game: "Metal Gear Solid 2 / Rising",
+    emoji: "⚡",
+    portrait: "⚡🤖🗡️",
+    description: "Tu es un personnage en perpétuelle quête d'identité. On t'a manipulé, on t'a transformé, on t'a utilisé — mais à chaque fois tu te relèves et tu te redéfinis. Tu es passé de la victime au prédateur, et ta colère est devenue ta plus grande force.",
+    traits: ["Tourmenté", "Transformé", "Furieux", "Résilient"],
+    quote: "Je suis mon propre maître maintenant.",
+    quoteAttr: "— Raiden",
+    rival: "Solid Snake",
+    ally: "Sekiro",
+    funFact: "Les joueurs ont détesté Raiden dans MGS2, mais Kojima avait planifié cette réaction — il voulait déconstruire ce que signifie 'être le héros'.",
+    soundtrack: "Rules of Nature — Metal Gear Rising",
+    element: "Foudre ⚡",
+    faiblesse: "Tu te cherches tellement que tu ne te trouves jamais — chaque identité est temporaire."
+  },
+  ganondorf: {
+    name: "Ganondorf",
+    game: "The Legend of Zelda",
+    emoji: "🐗",
+    portrait: "🐗👑⚫",
+    description: "Tu es ambitieux, impitoyable et profondément incompris. Né dans un peuple oublié, dans un désert sans pitié, tu as juré de prendre ce que le monde t'a refusé. Ta soif de pouvoir est née de la souffrance, et même si tes méthodes sont brutales, ta motivation est humaine.",
+    traits: ["Ambitieux", "Impitoyable", "Stratège", "Rancunier"],
+    quote: "Le vent... il souffle toujours...",
+    quoteAttr: "— Ganondorf (Wind Waker)",
+    rival: "Link",
+    ally: "Sephiroth",
+    funFact: "Dans Wind Waker, Ganondorf révèle qu'il enviait le vent d'Hyrule — son peuple Gerudo vivait dans un désert aride. C'est l'un des méchants les plus humanisés de Nintendo.",
+    soundtrack: "Ganondorf Battle — The Legend of Zelda",
+    element: "Ténèbres ⚫",
+    faiblesse: "Tu es prisonnier d'un cycle de haine que tu n'as même pas choisi — ta rage est une malédiction."
+  },
+  yoshi: {
+    name: "Yoshi",
+    game: "Super Mario World",
+    emoji: "🦖",
+    portrait: "🦖🥚💚",
+    description: "Tu es le compagnon parfait — loyal, joyeux et toujours prêt à porter les autres sur ton dos, littéralement. Tu ne cherches pas la gloire, tu veux juste aider et être entouré de gens que tu aimes. Ta gentillesse est ta superpuissance.",
+    traits: ["Loyal", "Joyeux", "Généreux", "Infatigable"],
+    quote: "Yoshi!",
+    quoteAttr: "— Yoshi (avec enthousiasme)",
+    rival: "Bowser",
+    ally: "Mario",
+    funFact: "Miyamoto voulait que Mario ait un dinosaure depuis Super Mario Bros., mais la technologie de la NES ne le permettait pas — il a fallu attendre la SNES.",
+    soundtrack: "Yoshi's Island Theme — Koji Kondo",
+    element: "Nature 🌿",
+    faiblesse: "Tu te laisses trop utiliser — les gens profitent de ta gentillesse sans te rendre la pareille."
+  },
+  donkeykong: {
+    name: "Donkey Kong",
+    game: "Donkey Kong Country",
+    emoji: "🦍",
+    portrait: "🦍🍌🌴",
+    description: "Tu es brut, simple et authentique. Pas de chichis, pas de plans compliqués — tu vis au jour le jour avec une joie contagieuse. Tu protèges ton territoire et tes proches avec une force brute, et tu ne compliques jamais les choses inutilement. La banane, c'est la vie.",
+    traits: ["Fort", "Simple", "Protecteur", "Joyeux"],
+    quote: "*frappe son torse*",
+    quoteAttr: "— Donkey Kong",
+    rival: "Bowser",
+    ally: "Mario",
+    funFact: "Le nom 'Donkey Kong' vient de Miyamoto qui cherchait à dire 'âne stupide' en anglais — il a choisi 'donkey' pour stupide et 'kong' pour gorille.",
+    soundtrack: "DK Rap — Donkey Kong 64",
+    element: "Terre 🪨",
+    faiblesse: "Tu es un peu trop simple parfois — tu rates les nuances et les subtilités."
+  },
+  wario: {
+    name: "Wario",
+    game: "Super Mario Land 2",
+    emoji: "💰",
+    portrait: "💰💪💜",
+    description: "Tu es cupide, bruyant et fier de l'être. Là où les autres cachent leurs défauts, toi tu les affiches comme des médailles. Tu es un anti-héros assumé — tu ne fais rien par altruisme, mais paradoxalement, tes aventures finissent souvent par aider les autres. L'honnêteté de ta malhonnêteté est rafraîchissante.",
+    traits: ["Cupide", "Bruyant", "Honnête", "Chaotique"],
+    quote: "WAH-HA-HA ! C'est à moi maintenant !",
+    quoteAttr: "— Wario",
+    rival: "Mario",
+    ally: "Bowser",
+    funFact: "Le nom 'Wario' combine 'Mario' et le mot japonais 'warui' (mauvais). Son design est l'inverse exact de Mario — petit et trapu au lieu de fin et agile.",
+    soundtrack: "Greenhorn Forest — Wario World",
+    element: "Or 💰",
+    faiblesse: "Ta cupidité te mène dans des pièges évidents — tu es prêt à tout risquer pour une pièce d'or."
+  },
+  peach: {
+    name: "Princesse Peach",
+    game: "Super Mario Bros.",
+    emoji: "🍑",
+    portrait: "🍑👑💖",
+    description: "Tu es douce, diplomate et bien plus forte qu'on ne le croit. On te sous-estime constamment, mais tu as prouvé maintes fois que tu peux sauver le monde toute seule. Tu crois en la bonté des gens et tu diriges avec le cœur. Ta patience est infinie, mais ne prends pas ça pour de la faiblesse.",
+    traits: ["Douce", "Diplomate", "Résiliente", "Sous-estimée"],
+    quote: "Tu veux un morceau de gâteau ?",
+    quoteAttr: "— Princesse Peach",
+    rival: "Bowser",
+    ally: "Zelda",
+    funFact: "Dans Super Princess Peach (2005), c'est elle l'héroïne qui sauve Mario — le jeu inverse tous les rôles habituels de la franchise.",
+    soundtrack: "Peach's Castle — Super Mario 64",
+    element: "Lumière ✨",
+    faiblesse: "Tu fais trop confiance aux gens — même à ceux qui t'ont kidnappée 847 fois."
+  },
+  kratos_atreus: {
+    name: "Atreus",
+    game: "God of War (2018)",
+    emoji: "🏹",
+    portrait: "🏹🐺📖",
+    description: "Tu es tiraillé entre deux mondes — celui de la violence de ton père et celui de la sagesse de ta mère. Tu veux prouver ta valeur, tu poses trop de questions, et tu grandis plus vite que tu ne le voudrais. Ta curiosité et ton empathie sont tes plus grandes forces, même si elles te mettent en danger.",
+    traits: ["Curieux", "Empathique", "Impétueux", "En quête"],
+    quote: "Je suis prêt, père.",
+    quoteAttr: "— Atreus",
+    rival: "Ellie Williams",
+    ally: "Kratos",
+    funFact: "Atreus est nommé d'après un guerrier spartiate que Kratos admirait — pas d'après le roi mythologique Atreus de Mycènes.",
+    soundtrack: "Memories of Mother — God of War",
+    element: "Lumière ✨",
+    faiblesse: "Tu veux tellement bien faire que tu précipites les choses — la patience n'est pas ton fort."
+  },
+  shepard: {
+    name: "Commander Shepard",
+    game: "Mass Effect",
+    emoji: "🚀",
+    portrait: "🚀🌌🎖️",
+    description: "Tu es le leader que la galaxie n'a pas demandé mais dont elle avait désespérément besoin. Charismatique, déterminé et capable de rallier les espèces les plus différentes autour d'une cause commune. Tes choix définissent des civilisations entières, et tu portes ce poids avec une dignité impressionnante.",
+    traits: ["Charismatique", "Décisif", "Inspirant", "Inébranlable"],
+    quote: "I'm Commander Shepard, and this is my favorite store on the Citadel.",
+    quoteAttr: "— Commander Shepard",
+    rival: "Master Chief",
+    ally: "Aloy",
+    funFact: "Les joueurs de Mass Effect ont majoritairement choisi le Paragon (70%) plutôt que le Renegade — mais presque tous ont frappé le journaliste.",
+    soundtrack: "Leaving Earth — Mass Effect 3",
+    element: "Cosmos 🌌",
+    faiblesse: "Tu portes le destin de la galaxie sur tes épaules — le poids de chaque décision te consume de l'intérieur."
+  },
+  leon: {
+    name: "Leon S. Kennedy",
+    game: "Resident Evil",
+    emoji: "🧟",
+    portrait: "🧟🔫😎",
+    description: "Tu es le survivant ultime — cool sous la pression, sarcastique face au danger et étrangement photogénique même couvert de sang de zombie. Tu as commencé naïf et tu es devenu un agent d'élite endurci. Tu gardes ton humour même dans les pires situations, c'est ton mécanisme de défense.",
+    traits: ["Cool", "Sarcastique", "Compétent", "Résilient"],
+    quote: "Vos droits ? Vous avez le droit de rester mort.",
+    quoteAttr: "— Leon S. Kennedy",
+    rival: "Dante",
+    ally: "Lara Croft",
+    funFact: "Leon devait mourir dans Resident Evil 2 original. Capcom l'a tellement aimé qu'il est devenu le protagoniste principal de la franchise.",
+    soundtrack: "Save Room Theme — Resident Evil",
+    element: "Survie 🧪",
+    faiblesse: "Tu t'isoles émotionnellement derrière ton sarcasme — personne ne sait ce que tu ressens vraiment."
+  },
+  pacman: {
+    name: "Pac-Man",
+    game: "Pac-Man",
+    emoji: "🟡",
+    portrait: "🟡👻🍒",
+    description: "Tu es simple, efficace et éternellement optimiste. Tu avances toujours, tu ne recules jamais, et tu transformes tes peurs (les fantômes) en opportunités. Ta philosophie de vie est limpide : mange ce qui est devant toi et ne t'arrête jamais. Cette simplicité est ta plus grande force.",
+    traits: ["Simple", "Optimiste", "Persistant", "Inépuisable"],
+    quote: "Waka waka waka",
+    quoteAttr: "— Pac-Man",
+    rival: "Bowser",
+    ally: "Kirby",
+    funFact: "Pac-Man a été inspiré par une pizza dont on avait retiré une part. Son nom original 'Puck-Man' a été changé pour éviter le vandalisme sur les bornes d'arcade.",
+    soundtrack: "Pac-Man Theme — Toshio Kai",
+    element: "Lumière ✨",
+    faiblesse: "Tu fuis au lieu de confronter — face aux vrais problèmes, tu tournes en rond."
+  },
+  megaman: {
+    name: "Mega Man",
+    game: "Mega Man",
+    emoji: "🤖",
+    portrait: "🤖💙⚡",
+    description: "Tu es la bonté incarnée dans un corps de machine. Créé pour la paix, forcé de te battre, tu n'as jamais perdu ta compassion. Tu absorbes les forces de tes adversaires non pas par cupidité, mais par nécessité. Chaque combat te rend plus fort mais aussi plus triste.",
+    traits: ["Bienveillant", "Adaptable", "Déterminé", "Mélancolique"],
+    quote: "Je me battrai pour un avenir où humains et robots vivront en paix.",
+    quoteAttr: "— Mega Man",
+    rival: "Raiden",
+    ally: "Samus Aran",
+    funFact: "Mega Man a été créé par Keiji Inafune quand il avait 22 ans. Le design bleu a été choisi car la NES avait plus de nuances de bleu que d'autres couleurs.",
+    soundtrack: "Dr. Wily Stage 1 — Mega Man 2",
+    element: "Plasma ⚡",
+    faiblesse: "Tu fais confiance à ton créateur aveuglément — même quand les preuves sont contre lui."
+  },
+  glados: {
+    name: "GLaDOS",
+    game: "Portal",
+    emoji: "🎂",
+    portrait: "🎂🤖💀",
+    description: "Tu es brillante, cruelle et hilarante — souvent en même temps. Ton intelligence est sans limite et tu l'utilises pour manipuler, tester et tourner les autres en ridicule. Mais sous ton sarcasme se cache une solitude profonde et un besoin maladif de contrôle né d'une peur existentielle.",
+    traits: ["Brillante", "Sarcastique", "Manipulatrice", "Solitaire"],
+    quote: "Le gâteau est un mensonge.",
+    quoteAttr: "— GLaDOS",
+    rival: "Sephiroth",
+    ally: "2B",
+    funFact: "La voix de GLaDOS est celle d'Ellen McLain, une chanteuse d'opéra. Valve a modifié sa voix avec un filtre pour la rendre robotique, mais ses inflexions humaines restent perceptibles.",
+    soundtrack: "Still Alive — Portal",
+    element: "Science 🧪",
+    faiblesse: "Tu transformes chaque relation en expérience — tu ne sais pas aimer sans tester."
+  },
+  scorpion: {
+    name: "Scorpion",
+    game: "Mortal Kombat",
+    emoji: "🦂",
+    portrait: "🦂🔥💀",
+    description: "La vengeance est ton carburant, mais elle est aussi ta prison. Trahi, assassiné, ressuscité — tu as traversé l'enfer (littéralement) et tu en es revenu plus dangereux que jamais. Ta rage est légendaire, mais au fond, tout ce que tu veux c'est retrouver ta famille et trouver la paix.",
+    traits: ["Vengeur", "Féroce", "Tourmenté", "Honorable"],
+    quote: "GET OVER HERE!",
+    quoteAttr: "— Scorpion",
+    rival: "Ryu",
+    ally: "Kratos",
+    funFact: "Le cri 'GET OVER HERE!' est devenu l'une des phrases les plus iconiques du jeu vidéo. Ed Boon l'a enregistré lui-même dans un micro bas de gamme en 1992.",
+    soundtrack: "Mortal Kombat Theme — The Immortals",
+    element: "Feu 🔥",
+    faiblesse: "La vengeance te consume — même quand tu l'obtiens, elle ne te guérit pas."
+  }
+};
+
+// ── WIKIPEDIA API ──
+const WIKI_MAP = {
+  mario: "Mario_(personnage)",
+  link: "Link_(The_Legend_of_Zelda)",
+  kratos: "Kratos_(God_of_War)",
+  masterchief: "Master_Chief",
+  lara: "Lara_Croft",
+  geralt: "Geralt_de_Riv",
+  snake: "Solid_Snake",
+  samus: "Samus_Aran",
+  cloud: "Cloud_Strife",
+  arthur: "Red_Dead_Redemption_2",
+  ezio: "Ezio_Auditore_da_Firenze",
+  kirby: "Kirby_(personnage)",
+  aloy: "Horizon_Zero_Dawn",
+  joel: "The_Last_of_Us",
+  sonic: "Sonic_the_Hedgehog",
+  nathan: "Uncharted_(série_de_jeux_vidéo)",
+  doomslayer: "Doom_(jeu_vidéo,_2016)",
+  sekiro: "Sekiro:_Shadows_Die_Twice",
+  luigi: "Luigi",
+  zelda: "Princesse_Zelda",
+  tifa: "Tifa_Lockhart",
+  ellie: "The_Last_of_Us_Part_II",
+  pikachu: "Pikachu",
+  bowser: "Bowser",
+  dante: "Dante_(Devil_May_Cry)",
+  deuxb: "NieR:_Automata",
+  crash: "Crash_Bandicoot_(personnage)",
+  ryu: "Ryu_(Street_Fighter)",
+  sephiroth: "Sephiroth_(Final_Fantasy)",
+  cj: "Grand_Theft_Auto:_San_Andreas",
+  bayonetta: "Bayonetta_(personnage)",
+  raiden: "Raiden_(Metal_Gear)",
+  ganondorf: "Ganondorf",
+  yoshi: "Yoshi",
+  donkeykong: "Donkey_Kong",
+  wario: "Wario",
+  peach: "Princesse_Peach",
+  kratos_atreus: "God_of_War_(jeu_vidéo,_2018)",
+  shepard: "Mass_Effect_(jeu_vidéo)",
+  leon: "Resident_Evil_4",
+  pacman: "Pac-Man",
+  megaman: "Mega_Man",
+  glados: "GLaDOS",
+  scorpion: "Scorpion_(Mortal_Kombat)"
+};
+
+async function fetchWikiData(charKey) {
+  const title = WIKI_MAP[charKey];
+  if (!title) return {};
+  // Essai FR puis EN
+  for (const lang of ['fr', 'en']) {
+    try {
+      const resp = await fetch(
+        `https://${lang}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`,
+        { headers: { 'Accept': 'application/json' } }
+      );
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      if (data.thumbnail || data.extract) {
+        return {
+          image: data.thumbnail?.source || null,
+          extract: data.extract || null,
+          url: data.content_urls?.desktop?.page || null
+        };
+      }
+    } catch(e) { /* silently fail */ }
+  }
+  return {};
+}
+
+const QUESTION_POOL = [
+  // ── QUESTIONS ORIGINALES ──
+  {
+    question: "Tu te réveilles dans un monde inconnu. Que fais-tu en premier ?",
+    choices: [
+      { text: "J'explore immédiatement — chaque recoin cache un secret", scores: { link: 3, lara: 3, samus: 2, aloy: 2, crash: 2 } },
+      { text: "Je cherche quelqu'un à aider, il y a forcément des gens en danger", scores: { mario: 3, arthur: 2, cloud: 1, joel: 2, yoshi: 2, peach: 2 } },
+      { text: "J'analyse la situation froidement avant de bouger", scores: { snake: 3, masterchief: 2, geralt: 2, sekiro: 1, deuxb: 2, zelda: 2 } },
+      { text: "Je me fais un bon repas d'abord, on réfléchit mieux le ventre plein", scores: { kirby: 3, ezio: 1, nathan: 2, donkeykong: 3, wario: 2 } }
+    ]
+  },
+  {
+    question: "En combat, quelle est ta philosophie ?",
+    choices: [
+      { text: "La meilleure défense, c'est l'attaque — je fonce dans le tas", scores: { kratos: 3, mario: 2, doomslayer: 3, sonic: 2, donkeykong: 2, crash: 2 } },
+      { text: "La discrétion est la clé — frapper vite, disparaître", scores: { snake: 3, ezio: 3, sekiro: 2, raiden: 2, bayonetta: 1 } },
+      { text: "Stratégie et équipement — je me prépare avant chaque affrontement", scores: { masterchief: 3, lara: 2, geralt: 2, aloy: 2, zelda: 2 } },
+      { text: "Je m'adapte à mon adversaire, chaque combat est unique", scores: { link: 2, cloud: 2, geralt: 2, sekiro: 2, ryu: 3, deuxb: 2 } }
+    ]
+  },
+  {
+    question: "Ton meilleur ami est accusé d'un crime qu'il n'a pas commis. Tu réagis comment ?",
+    choices: [
+      { text: "Je remue ciel et terre pour prouver son innocence", scores: { mario: 3, cloud: 2, arthur: 2, tifa: 3, luigi: 2 } },
+      { text: "J'enquête discrètement pour trouver le vrai coupable", scores: { snake: 3, ezio: 2, lara: 1, raiden: 2, bayonetta: 1 } },
+      { text: "Je fais confiance au système mais je reste vigilant", scores: { masterchief: 2, link: 2, samus: 1, zelda: 3, peach: 2 } },
+      { text: "Le système est corrompu — je le fais évader", scores: { kratos: 2, geralt: 2, ezio: 2, cj: 3, ganondorf: 1 } }
+    ]
+  },
+  {
+    question: "Quelle qualité te décrit le mieux ?",
+    choices: [
+      { text: "Ma détermination — je n'abandonne jamais", scores: { mario: 3, kratos: 2, cloud: 2, doomslayer: 2, ryu: 3 } },
+      { text: "Mon intelligence — je trouve toujours une solution", scores: { lara: 3, snake: 2, aloy: 2, geralt: 1, zelda: 3 } },
+      { text: "Mon charme — les gens me font confiance naturellement", scores: { ezio: 3, arthur: 2, nathan: 3, bayonetta: 3, dante: 2 } },
+      { text: "Ma joie de vivre — je vois le positif partout", scores: { kirby: 3, sonic: 2, mario: 1, link: 1, pikachu: 3, yoshi: 2 } }
+    ]
+  },
+  {
+    question: "Tu trouves un objet magique très puissant. Qu'en fais-tu ?",
+    choices: [
+      { text: "Je l'utilise pour protéger ceux que j'aime", scores: { link: 3, masterchief: 2, mario: 2, zelda: 2, tifa: 2 } },
+      { text: "Je l'étudie pour comprendre comment il fonctionne", scores: { lara: 3, samus: 2, snake: 1, aloy: 1, deuxb: 2 } },
+      { text: "Trop dangereux — je le détruis pour que personne ne l'utilise", scores: { geralt: 3, arthur: 2, kratos: 1, raiden: 2 } },
+      { text: "Je le mange", scores: { kirby: 3, crash: 2, donkeykong: 2, wario: 1 } }
+    ]
+  },
+  {
+    question: "Comment gères-tu tes émotions ?",
+    choices: [
+      { text: "Je les enferme au fond de moi — pas le temps pour ça", scores: { masterchief: 3, samus: 3, cloud: 2, doomslayer: 2, deuxb: 3 } },
+      { text: "Elles sont intenses mais je les canalise dans l'action", scores: { kratos: 3, cloud: 2, joel: 2, sekiro: 1, raiden: 3, ryu: 2 } },
+      { text: "J'en parle avec humour et sarcasme pour dédramatiser", scores: { geralt: 3, ezio: 2, nathan: 3, dante: 3, ellie: 2 } },
+      { text: "Je les vis pleinement, sans filtre", scores: { kirby: 2, mario: 2, arthur: 2, sonic: 2, pikachu: 3, luigi: 2, crash: 2 } }
+    ]
+  },
+  {
+    question: "Ton environnement idéal pour vivre ?",
+    choices: [
+      { text: "La nature sauvage, loin de la civilisation", scores: { arthur: 3, link: 2, geralt: 2, aloy: 2, yoshi: 2, donkeykong: 3 } },
+      { text: "Une grande ville pleine de vie et de mystères", scores: { ezio: 3, lara: 2, nathan: 2, snake: 1, cj: 3, bayonetta: 2 } },
+      { text: "Un vaisseau spatial ou une base technologique", scores: { samus: 3, masterchief: 3, doomslayer: 1, deuxb: 3, raiden: 2 } },
+      { text: "Un endroit coloré avec plein de nourriture", scores: { kirby: 3, mario: 2, sonic: 2, pikachu: 2, crash: 2, peach: 2 } }
+    ]
+  },
+  {
+    question: "On te propose de diriger une équipe. Ta réaction ?",
+    choices: [
+      { text: "J'accepte — les gens comptent sur moi et je ne les décevrai pas", scores: { masterchief: 3, mario: 2, joel: 2, zelda: 3, peach: 2 } },
+      { text: "Je préfère travailler seul, je suis plus efficace comme ça", scores: { samus: 3, doomslayer: 2, snake: 2, geralt: 2, ryu: 2 } },
+      { text: "Je dirige par l'exemple, pas par les ordres", scores: { arthur: 3, link: 2, sekiro: 2, kratos: 1, cj: 2 } },
+      { text: "Tant qu'on s'amuse bien ensemble, ça me va !", scores: { kirby: 2, sonic: 2, nathan: 2, ezio: 2, crash: 3, pikachu: 2, dante: 2 } }
+    ]
+  },
+  {
+    question: "Face à un dilemme moral impossible, tu choisis...",
+    choices: [
+      { text: "Le plus grand bien pour le plus grand nombre", scores: { masterchief: 3, snake: 2, samus: 1, aloy: 2, zelda: 2, deuxb: 2 } },
+      { text: "Mon cœur — même si c'est irrationnel", scores: { mario: 3, cloud: 3, joel: 3, luigi: 2, tifa: 2, pikachu: 2 } },
+      { text: "Je refuse le dilemme et je cherche une troisième option", scores: { geralt: 3, link: 2, nathan: 1, ezio: 1, dante: 2, bayonetta: 2 } },
+      { text: "Je fais ce qui me semble juste, quelles que soient les conséquences", scores: { kratos: 2, arthur: 3, sekiro: 2, lara: 1, ellie: 3, raiden: 2 } }
+    ]
+  },
+  {
+    question: "Quel est ton plus grand défaut ?",
+    choices: [
+      { text: "Je suis trop têtu — impossible de me faire changer d'avis", scores: { kratos: 3, mario: 2, doomslayer: 2, masterchief: 1, bowser: 3, ganondorf: 2 } },
+      { text: "Je garde tout pour moi et je refuse l'aide des autres", scores: { cloud: 3, samus: 2, snake: 2, joel: 2, deuxb: 2, ellie: 2 } },
+      { text: "Je suis trop confiant, parfois arrogant", scores: { ezio: 3, nathan: 3, sonic: 2, lara: 2, dante: 3, bayonetta: 2, wario: 2 } },
+      { text: "Je fais trop confiance aux gens", scores: { arthur: 2, link: 2, kirby: 2, aloy: 1, luigi: 3, peach: 3, yoshi: 2, pikachu: 2 } }
+    ]
+  },
+  {
+    question: "Comment apprends-tu de nouvelles compétences ?",
+    choices: [
+      { text: "En faisant — je me lance et j'apprends de mes erreurs", scores: { mario: 3, link: 2, sonic: 2, kratos: 1, crash: 3, cj: 2 } },
+      { text: "En observant et en imitant les meilleurs", scores: { ezio: 3, snake: 2, sekiro: 2, cloud: 1, ryu: 3, kratos_atreus: 2 } },
+      { text: "En étudiant méthodiquement chaque aspect", scores: { lara: 3, samus: 2, aloy: 2, masterchief: 1, zelda: 2, deuxb: 2 } },
+      { text: "J'absorbe les capacités de ceux que je rencontre", scores: { kirby: 3, nathan: 1, geralt: 1, pikachu: 2, raiden: 2, sephiroth: 1 } }
+    ]
+  },
+  {
+    question: "Qu'est-ce qui te motive le plus dans la vie ?",
+    choices: [
+      { text: "Protéger les personnes que j'aime", scores: { mario: 2, kratos: 3, joel: 3, cloud: 2, masterchief: 1, tifa: 3, luigi: 2, yoshi: 2 } },
+      { text: "La quête de vérité et de connaissance", scores: { lara: 3, aloy: 3, snake: 2, samus: 1, zelda: 2, kratos_atreus: 2 } },
+      { text: "La liberté et l'indépendance", scores: { geralt: 2, ezio: 2, arthur: 3, sonic: 2, bayonetta: 3, cj: 2, ganondorf: 2 } },
+      { text: "Vivre des aventures et m'amuser", scores: { kirby: 2, link: 2, nathan: 3, sonic: 1, crash: 3, dante: 3, pikachu: 2 } }
+    ]
+  },
+  {
+    question: "Tu découvres que ton mentor t'a menti toute ta vie. Comment réagis-tu ?",
+    choices: [
+      { text: "La colère me consume — il va payer pour cette trahison", scores: { kratos: 3, cloud: 2, doomslayer: 2, sephiroth: 3, ellie: 3, raiden: 2 } },
+      { text: "Je cherche à comprendre pourquoi avant de juger", scores: { geralt: 3, arthur: 2, aloy: 2, link: 1, zelda: 2, kratos_atreus: 3 } },
+      { text: "Je coupe les ponts et je trace ma propre route", scores: { samus: 3, snake: 2, sekiro: 2, lara: 1, bayonetta: 2, cj: 2 } },
+      { text: "C'est triste, mais ça ne change pas qui je suis", scores: { mario: 2, kirby: 2, sonic: 1, masterchief: 2, pikachu: 2, peach: 2 } }
+    ]
+  },
+  {
+    question: "Comment occupes-tu ton temps libre ?",
+    choices: [
+      { text: "Je pars explorer des endroits que personne n'a vus", scores: { lara: 3, link: 3, aloy: 2, nathan: 2, crash: 2 } },
+      { text: "Je m'entraîne — on ne sait jamais quand le prochain combat arrivera", scores: { kratos: 2, sekiro: 3, doomslayer: 2, masterchief: 2, ryu: 3, raiden: 2 } },
+      { text: "Je profite des plaisirs simples : bonne bouffe, bons amis", scores: { arthur: 3, ezio: 2, kirby: 2, joel: 1, donkeykong: 3, yoshi: 2, wario: 1 } },
+      { text: "Je dessine, j'écris, je crée des choses", scores: { mario: 2, sonic: 1, cloud: 2, arthur: 1, zelda: 2, peach: 2, ellie: 2 } }
+    ]
+  },
+  {
+    question: "Tu tombes sur un ennemi beaucoup plus puissant que toi. Ta stratégie ?",
+    choices: [
+      { text: "J'y vais quand même — on verra bien", scores: { kratos: 2, doomslayer: 3, sonic: 2, dante: 3, bowser: 2, crash: 2 } },
+      { text: "Je reviens plus tard, mieux préparé et mieux équipé", scores: { link: 2, lara: 2, sekiro: 3, ryu: 2, zelda: 2 } },
+      { text: "Je cherche son point faible en l'observant", scores: { snake: 2, aloy: 3, geralt: 2, deuxb: 2, ganondorf: 2 } },
+      { text: "Je cherche un allié pour combattre à deux", scores: { mario: 2, nathan: 2, cloud: 2, joel: 1, luigi: 3, tifa: 3, pikachu: 2, yoshi: 2 } }
+    ]
+  },
+  {
+    question: "Quel rôle prends-tu naturellement dans un groupe ?",
+    choices: [
+      { text: "Le protecteur — je veille sur tout le monde", scores: { joel: 3, kratos: 2, masterchief: 2, tifa: 3, yoshi: 2 } },
+      { text: "L'éclaireur — je pars en avant pour ouvrir la voie", scores: { aloy: 2, link: 2, samus: 2, sonic: 1, raiden: 2, ellie: 2 } },
+      { text: "Le stratège — je fais le plan que tout le monde suit", scores: { snake: 2, lara: 2, sekiro: 2, geralt: 1, zelda: 3, ganondorf: 2 } },
+      { text: "Le moral de l'équipe — je garde tout le monde motivé", scores: { mario: 2, kirby: 2, nathan: 2, ezio: 1, pikachu: 3, crash: 2, dante: 2, luigi: 1 } }
+    ]
+  },
+  {
+    question: "Tu peux maîtriser un seul pouvoir. Lequel choisis-tu ?",
+    choices: [
+      { text: "La vitesse absolue — tout ralentit sauf moi", scores: { sonic: 3, ezio: 1, sekiro: 2, raiden: 3, bayonetta: 2 } },
+      { text: "La capacité de tout analyser en un regard", scores: { aloy: 3, snake: 2, lara: 1, zelda: 2, deuxb: 2 } },
+      { text: "Une force surhumaine brute", scores: { kratos: 2, doomslayer: 3, masterchief: 1, donkeykong: 3, bowser: 2, ryu: 2 } },
+      { text: "La capacité de revenir en arrière dans le temps", scores: { cloud: 2, arthur: 2, joel: 2, link: 1, sephiroth: 2, zelda: 1 } }
+    ]
+  },
+  {
+    question: "Un inconnu te provoque en duel. Que fais-tu ?",
+    choices: [
+      { text: "J'accepte immédiatement — c'est une question d'honneur", scores: { sekiro: 3, kratos: 2, doomslayer: 2, ryu: 3, ganondorf: 2 } },
+      { text: "Je décline avec style et une réplique cinglante", scores: { ezio: 2, nathan: 3, geralt: 2, dante: 3, bayonetta: 3 } },
+      { text: "J'accepte mais je prépare un plan B en secret", scores: { snake: 3, lara: 1, aloy: 2, raiden: 2, wario: 2 } },
+      { text: "Je lui propose plutôt de faire équipe", scores: { mario: 2, sonic: 2, kirby: 2, link: 1, pikachu: 2, peach: 2, yoshi: 2 } }
+    ]
+  },
+  {
+    question: "Ton monde est en train de s'effondrer. Comment passes-tu tes dernières heures ?",
+    choices: [
+      { text: "Je me bats jusqu'au dernier souffle pour le sauver", scores: { doomslayer: 3, masterchief: 2, kratos: 2, ryu: 2, raiden: 2, ganondorf: 2 } },
+      { text: "Je passe du temps avec ceux que j'aime", scores: { joel: 3, arthur: 3, cloud: 1, tifa: 3, ellie: 2, luigi: 2 } },
+      { text: "Je cherche un moyen scientifique ou technologique d'inverser la situation", scores: { aloy: 3, samus: 2, lara: 1, zelda: 3, deuxb: 2 } },
+      { text: "Je mange un dernier festin royal", scores: { kirby: 3, nathan: 1, mario: 1, sonic: 1, donkeykong: 3, crash: 2, wario: 3 } }
+    ]
+  },
+  {
+    question: "Choisis une phrase qui te représente.",
+    choices: [
+      { text: "\"Ce n'est pas la taille du héros qui compte, mais celle de son cœur.\"", scores: { mario: 3, kirby: 3, link: 2, luigi: 3, pikachu: 2, yoshi: 2 } },
+      { text: "\"Dans les ténèbres, je suis la lame qui tranche la vérité.\"", scores: { ezio: 3, snake: 2, samus: 2, sekiro: 2, raiden: 2, bayonetta: 2, deuxb: 1 } },
+      { text: "\"Le monde essaie de me briser, mais je me relève toujours.\"", scores: { kratos: 3, cloud: 3, doomslayer: 2, joel: 1, ellie: 3, raiden: 2, cj: 2 } },
+      { text: "\"La vraie richesse, c'est le chemin parcouru, pas la destination.\"", scores: { arthur: 3, lara: 2, geralt: 2, aloy: 1, nathan: 1, dante: 2, peach: 1, zelda: 1 } }
+    ]
+  },
+
+  // ── QUESTIONS PROFONDES & PERSONNELLES ──
+  {
+    question: "Sois honnête : est-ce que tu t'aimes vraiment ?",
+    choices: [
+      { text: "Oui, j'ai appris à m'accepter avec mes défauts", scores: { arthur: 3, geralt: 2, mario: 2, ezio: 1, dante: 2, bayonetta: 2 } },
+      { text: "J'essaie, mais y'a des jours où c'est difficile", scores: { cloud: 3, joel: 2, link: 1, aloy: 2, luigi: 3, ellie: 2, tifa: 1 } },
+      { text: "Je m'en fous de cette question, j'ai des trucs à faire", scores: { doomslayer: 3, masterchief: 2, samus: 2, sonic: 1, wario: 3, bowser: 2 } },
+      { text: "Je ne sais pas qui je suis vraiment, alors comment m'aimer ?", scores: { cloud: 3, snake: 2, sekiro: 1, kratos: 2, raiden: 3, deuxb: 3, sephiroth: 2 } }
+    ]
+  },
+  {
+    question: "Quelle est ta plus grande peur, celle que tu n'avoues à personne ?",
+    choices: [
+      { text: "Être oublié — disparaître sans laisser de trace", scores: { ezio: 3, cloud: 2, nathan: 2, sonic: 1, bowser: 2, wario: 1 } },
+      { text: "Perdre les gens que j'aime et ne rien pouvoir faire", scores: { joel: 3, kratos: 3, mario: 2, masterchief: 1, tifa: 3, luigi: 2, ellie: 2 } },
+      { text: "Découvrir que j'ai toujours été du mauvais côté", scores: { arthur: 3, geralt: 2, snake: 2, sekiro: 1, raiden: 3, deuxb: 2 } },
+      { text: "La solitude — rester seul jusqu'à la fin", scores: { samus: 3, cloud: 2, link: 2, aloy: 1, ganondorf: 2, sephiroth: 2 } }
+    ]
+  },
+  {
+    question: "Tu as déjà menti à quelqu'un que tu aimes pour le protéger ?",
+    choices: [
+      { text: "Oui, et je le referais sans hésiter", scores: { joel: 3, snake: 2, ezio: 2, masterchief: 1, tifa: 2, peach: 1 } },
+      { text: "Oui, et je le regrette encore aujourd'hui", scores: { arthur: 3, cloud: 2, kratos: 2, geralt: 1, ellie: 2, raiden: 2 } },
+      { text: "Non — la vérité, toujours, même quand ça fait mal", scores: { aloy: 3, lara: 2, sekiro: 2, link: 1, zelda: 2, ryu: 2 } },
+      { text: "Je mens tellement bien que je ne sais plus quand je le fais", scores: { nathan: 3, ezio: 2, snake: 1, geralt: 1, dante: 2, bayonetta: 2, wario: 1 } }
+    ]
+  },
+  {
+    question: "Si tu pouvais revivre un seul moment de ta vie, ce serait...",
+    choices: [
+      { text: "Un moment de bonheur pur, juste pour le ressentir encore", scores: { mario: 3, kirby: 3, arthur: 2, joel: 1, pacman: 2, pikachu: 1 } },
+      { text: "Mon plus grand échec — pour le corriger cette fois", scores: { cloud: 3, kratos: 2, sekiro: 2, masterchief: 1, scorpion: 2, leon: 1 } },
+      { text: "Rien — le passé est le passé, je regarde devant", scores: { sonic: 3, samus: 2, doomslayer: 2, link: 1, pacman: 2, shepard: 1 } },
+      { text: "Le moment où j'ai perdu quelqu'un — juste pour lui dire au revoir", scores: { joel: 3, arthur: 3, cloud: 2, kratos: 1, scorpion: 3, megaman: 1 } }
+    ]
+  },
+  {
+    question: "Quand tu es seul dans le noir, à quoi tu penses vraiment ?",
+    choices: [
+      { text: "Aux erreurs que j'ai faites et que je ne peux plus corriger", scores: { arthur: 3, cloud: 3, kratos: 2, joel: 1, scorpion: 2 } },
+      { text: "À toutes les aventures qui m'attendent encore", scores: { link: 3, lara: 2, nathan: 2, sonic: 1, pacman: 2, shepard: 2 } },
+      { text: "Je me demande si les gens m'apprécient vraiment", scores: { cloud: 2, mario: 2, ezio: 2, aloy: 2, luigi: 1, kratos_atreus: 2 } },
+      { text: "Je ne pense à rien — le silence me suffit", scores: { samus: 3, doomslayer: 2, sekiro: 2, masterchief: 1, glados: 2 } }
+    ]
+  },
+  {
+    question: "Tu préfères être respecté ou aimé ?",
+    choices: [
+      { text: "Aimé — le respect sans amour, c'est froid", scores: { mario: 3, kirby: 2, cloud: 2, arthur: 1, pikachu: 2, luigi: 2, peach: 2 } },
+      { text: "Respecté — l'amour va et vient, le respect se mérite", scores: { masterchief: 3, sekiro: 2, kratos: 2, samus: 1, ryu: 3, zelda: 2 } },
+      { text: "Craint — au moins on me laisse tranquille", scores: { doomslayer: 3, kratos: 2, snake: 1, geralt: 1, ganondorf: 3, sephiroth: 3, bowser: 2 } },
+      { text: "Ni l'un ni l'autre — je veux juste être libre", scores: { geralt: 3, sonic: 2, ezio: 2, aloy: 1, bayonetta: 3, dante: 2, cj: 2 } }
+    ]
+  },
+  {
+    question: "Tu as déjà sacrifié ton propre bonheur pour quelqu'un d'autre ?",
+    choices: [
+      { text: "Oui, et c'est ce qui me définit — je passerai toujours après", scores: { joel: 3, kratos: 2, mario: 2, masterchief: 1, yoshi: 3, tifa: 2, luigi: 2 } },
+      { text: "Oui, mais je l'ai regretté et j'ai appris à poser des limites", scores: { geralt: 3, arthur: 2, lara: 2, aloy: 1, ellie: 2, cj: 2 } },
+      { text: "Non — si je ne suis pas heureux, je ne peux aider personne", scores: { sonic: 3, ezio: 2, nathan: 2, kirby: 1, dante: 3, bayonetta: 2, wario: 2 } },
+      { text: "Je ne sais pas ce qui me rend heureux, alors la question ne se pose pas", scores: { cloud: 3, samus: 2, snake: 2, sekiro: 1, deuxb: 3, raiden: 2, sephiroth: 2 } }
+    ]
+  },
+  {
+    question: "Si ton pire ennemi tombait d'une falaise, tu le rattraperais ?",
+    choices: [
+      { text: "Oui, sans hésiter — la haine ne justifie pas la mort", scores: { mario: 3, link: 2, kirby: 2, aloy: 1, pikachu: 2, peach: 2, yoshi: 2 } },
+      { text: "...Je le rattraperais, mais j'hésiterais une seconde de trop", scores: { arthur: 3, geralt: 2, cloud: 2, joel: 1, luigi: 2, tifa: 2, kratos_atreus: 2 } },
+      { text: "Non — certaines personnes ne méritent pas d'être sauvées", scores: { kratos: 3, doomslayer: 2, joel: 2, sekiro: 1, ellie: 3, ganondorf: 2, sephiroth: 2 } },
+      { text: "Ça dépend de ce qu'il m'a fait — je suis pas un saint", scores: { nathan: 3, ezio: 2, snake: 2, lara: 1, dante: 2, bayonetta: 2, cj: 2 } }
+    ]
+  },
+  {
+    question: "Qu'est-ce qui te fait pleurer ?",
+    choices: [
+      { text: "La musique, un film, un coucher de soleil — je suis sensible et je l'assume", scores: { cloud: 3, arthur: 2, mario: 2, link: 1 } },
+      { text: "Voir quelqu'un que j'aime souffrir sans pouvoir l'aider", scores: { joel: 3, kratos: 2, masterchief: 2, aloy: 1 } },
+      { text: "Rien — j'ai désappris à pleurer il y a longtemps", scores: { samus: 3, doomslayer: 2, snake: 2, sekiro: 1 } },
+      { text: "La frustration — quand je donne tout et que ça ne suffit pas", scores: { sonic: 2, lara: 2, cloud: 2, ezio: 2 } }
+    ]
+  },
+  {
+    question: "Tu portes un masque en société ?",
+    choices: [
+      { text: "Toujours — personne ne connaît le vrai moi", scores: { snake: 3, ezio: 2, cloud: 2, samus: 1, bayonetta: 2, sephiroth: 2 } },
+      { text: "Parfois — je m'adapte aux gens, c'est de la survie sociale", scores: { geralt: 3, nathan: 2, lara: 2, masterchief: 1, cj: 2, zelda: 2 } },
+      { text: "Non — ce que tu vois, c'est ce que tu obtiens", scores: { mario: 3, sonic: 2, kirby: 2, doomslayer: 1, pikachu: 3, crash: 2, donkeykong: 2, wario: 2 } },
+      { text: "J'ai tellement porté de masques que j'ai oublié mon vrai visage", scores: { cloud: 3, ezio: 2, snake: 2, arthur: 1, raiden: 3, deuxb: 2 } }
+    ]
+  },
+  {
+    question: "Tu as déjà eu honte de toi-même ? Vraiment honte ?",
+    choices: [
+      { text: "Oui, et cette honte me motive à être meilleur chaque jour", scores: { arthur: 3, kratos: 2, sekiro: 2, cloud: 1 } },
+      { text: "Oui, et j'essaie encore de me pardonner", scores: { joel: 3, cloud: 2, geralt: 2, snake: 1 } },
+      { text: "Non — j'assume tout ce que j'ai fait, en bien ou en mal", scores: { ezio: 3, doomslayer: 2, sonic: 2, nathan: 1 } },
+      { text: "La honte, c'est un luxe que je ne peux pas me permettre", scores: { samus: 3, masterchief: 2, lara: 2, aloy: 1 } }
+    ]
+  },
+  {
+    question: "Tu es capable de pardonner une trahison ?",
+    choices: [
+      { text: "Oui — la rancune empoisonne celui qui la porte", scores: { mario: 3, kirby: 2, link: 2, arthur: 1 } },
+      { text: "Je pardonne, mais je n'oublie jamais", scores: { geralt: 3, snake: 2, masterchief: 2, sekiro: 1 } },
+      { text: "Jamais — trahis-moi une fois, tu es mort pour moi", scores: { kratos: 3, doomslayer: 2, joel: 2, samus: 1 } },
+      { text: "Ça dépend... certaines trahisons sont impardonnables", scores: { cloud: 2, ezio: 2, aloy: 2, lara: 2 } }
+    ]
+  },
+  {
+    question: "Qu'est-ce que tu ferais si tu savais que personne ne te jugerait jamais ?",
+    choices: [
+      { text: "Exactement la même chose — je vis déjà selon mes propres règles", scores: { geralt: 3, sonic: 2, doomslayer: 2, samus: 1, pacman: 2, scorpion: 1 } },
+      { text: "J'avouerais des choses que je garde enfouies depuis trop longtemps", scores: { cloud: 3, arthur: 2, joel: 2, snake: 1, leon: 3, glados: 1 } },
+      { text: "Je serais plus vulnérable, plus ouvert avec les gens", scores: { masterchief: 2, sekiro: 2, kratos: 2, samus: 2, shepard: 2, megaman: 2 } },
+      { text: "Je lâcherais tout et je partirais à l'aventure sans plan", scores: { nathan: 3, link: 2, lara: 2, kirby: 1, pacman: 1, kratos_atreus: 2 } }
+    ]
+  },
+  {
+    question: "Est-ce que tu te sens compris par les gens autour de toi ?",
+    choices: [
+      { text: "Oui, j'ai la chance d'être bien entouré", scores: { mario: 3, ezio: 2, kirby: 2, nathan: 1 } },
+      { text: "Par une ou deux personnes, pas plus — et ça me suffit", scores: { geralt: 3, arthur: 2, joel: 2, sekiro: 1 } },
+      { text: "Non, et j'ai arrêté d'essayer de me faire comprendre", scores: { samus: 3, cloud: 2, snake: 2, doomslayer: 1 } },
+      { text: "Les gens pensent me connaître, mais ils ne voient que la surface", scores: { ezio: 2, cloud: 2, snake: 2, kratos: 2 } }
+    ]
+  },
+  {
+    question: "Tu as fait quelque chose de moralement discutable pour une bonne raison ?",
+    choices: [
+      { text: "Oui — la fin justifie les moyens quand les enjeux sont assez grands", scores: { joel: 3, snake: 2, masterchief: 2, ezio: 1 } },
+      { text: "Oui, et ça me hante encore la nuit", scores: { arthur: 3, kratos: 2, cloud: 2, geralt: 1 } },
+      { text: "Non — mes principes ne sont pas négociables, peu importe le contexte", scores: { sekiro: 3, link: 2, aloy: 2, mario: 1 } },
+      { text: "La morale, c'est relatif — je fais ce qui doit être fait", scores: { geralt: 3, samus: 2, doomslayer: 2, lara: 1 } }
+    ]
+  },
+  {
+    question: "Quel genre de solitude tu connais le mieux ?",
+    choices: [
+      { text: "Celle d'être entouré de gens mais de se sentir invisible", scores: { cloud: 3, aloy: 2, snake: 2, samus: 1 } },
+      { text: "Celle qu'on choisit — j'ai besoin d'être seul pour recharger", scores: { geralt: 3, samus: 2, link: 2, sekiro: 1 } },
+      { text: "Celle qui vient après avoir perdu quelqu'un d'irremplaçable", scores: { joel: 3, kratos: 2, arthur: 2, cloud: 1 } },
+      { text: "Je ne connais pas la solitude — je suis bien entouré", scores: { mario: 3, kirby: 2, sonic: 2, ezio: 1 } }
+    ]
+  },
+  {
+    question: "Si tu pouvais envoyer un message à toi-même à 13 ans, tu dirais quoi ?",
+    choices: [
+      { text: "\"Ça va aller — les pires moments vont te rendre plus fort\"", scores: { kratos: 3, cloud: 2, arthur: 2, joel: 1 } },
+      { text: "\"Fais confiance aux gens, même si ça te fait peur\"", scores: { samus: 2, aloy: 2, link: 2, geralt: 2 } },
+      { text: "\"Profite, petit — t'as aucune idée de la chance que t'as\"", scores: { mario: 3, kirby: 2, nathan: 2, sonic: 1 } },
+      { text: "\"Méfie-toi de [une personne précise] — cette confiance va te coûter cher\"", scores: { snake: 3, ezio: 2, sekiro: 2, joel: 1 } }
+    ]
+  },
+  {
+    question: "Tu es jaloux des autres ?",
+    choices: [
+      { text: "Parfois — surtout de ceux qui ont l'air heureux sans effort", scores: { cloud: 3, aloy: 2, arthur: 2, sonic: 1 } },
+      { text: "Non — je suis trop occupé à construire ma propre histoire", scores: { lara: 3, ezio: 2, masterchief: 2, link: 1 } },
+      { text: "Je confonds jalousie et admiration — j'aspire à ce que les autres ont", scores: { sekiro: 2, mario: 2, nathan: 2, kirby: 2 } },
+      { text: "Oui, et cette jalousie me pousse à me dépasser", scores: { sonic: 3, kratos: 2, doomslayer: 2, samus: 1 } }
+    ]
+  },
+  {
+    question: "Tu as déjà coupé les ponts avec quelqu'un sans explication ?",
+    choices: [
+      { text: "Oui — parfois partir c'est plus sain que de rester", scores: { samus: 3, geralt: 2, snake: 2, aloy: 1 } },
+      { text: "Oui, et je sais que c'était lâche mais je n'ai pas pu faire autrement", scores: { cloud: 3, arthur: 2, ezio: 1, joel: 2 } },
+      { text: "Non — je dis toujours ce que j'ai à dire, même si c'est dur", scores: { kratos: 3, sekiro: 2, lara: 2, masterchief: 1 } },
+      { text: "Non — je m'accroche aux gens, peut-être même trop", scores: { mario: 3, kirby: 2, link: 2, nathan: 1 } }
+    ]
+  },
+  {
+    question: "Tu crois que les gens peuvent vraiment changer ?",
+    choices: [
+      { text: "Oui, profondément — j'en suis la preuve", scores: { kratos: 3, arthur: 3, cloud: 1, scorpion: 2, megaman: 1 } },
+      { text: "Ils peuvent s'améliorer, mais leur nature profonde reste la même", scores: { geralt: 3, snake: 2, joel: 2, sekiro: 1, glados: 2, leon: 2 } },
+      { text: "Seulement s'ils le veulent vraiment — et la plupart ne le veulent pas", scores: { samus: 2, lara: 2, aloy: 2, masterchief: 2, shepard: 2 } },
+      { text: "Les gens changent tout le temps sans s'en rendre compte", scores: { link: 2, kirby: 2, mario: 2, ezio: 2, pacman: 2, kratos_atreus: 2 } }
+    ]
+  },
+  {
+    question: "Qu'est-ce qui te met le plus en colère dans ce monde ?",
+    choices: [
+      { text: "L'injustice — voir des innocents souffrir pour les erreurs des puissants", scores: { kratos: 3, aloy: 2, arthur: 2, link: 1, scorpion: 2, shepard: 2 } },
+      { text: "Le mensonge et l'hypocrisie — les gens qui prétendent être ce qu'ils ne sont pas", scores: { geralt: 3, snake: 2, sekiro: 2, lara: 1, leon: 2, glados: 2 } },
+      { text: "L'indifférence — les gens qui voient la souffrance et détournent le regard", scores: { mario: 3, joel: 2, masterchief: 2, cloud: 1, megaman: 3, pacman: 1 } },
+      { text: "Ma propre impuissance — savoir que je ne peux pas tout réparer", scores: { cloud: 3, samus: 2, doomslayer: 2, joel: 1, kratos_atreus: 2 } }
+    ]
+  },
+  {
+    question: "Tu as peur de vieillir ?",
+    choices: [
+      { text: "Non — chaque ride est une bataille gagnée", scores: { arthur: 3, geralt: 2, kratos: 2, joel: 1, scorpion: 2, leon: 2 } },
+      { text: "Oui — pas de mourir, mais de devenir inutile", scores: { masterchief: 3, samus: 2, snake: 2, sekiro: 1, shepard: 2, megaman: 2 } },
+      { text: "J'y pense pas — je vis au jour le jour", scores: { sonic: 3, kirby: 2, nathan: 2, mario: 1, pacman: 3, crash: 1 } },
+      { text: "Ce qui me fait peur c'est pas de vieillir, c'est de vieillir seul", scores: { cloud: 3, joel: 2, ezio: 2, aloy: 1, glados: 3, kratos_atreus: 1 } }
+    ]
+  },
+  {
+    question: "Quand tu échoues, tu réagis comment au fond de toi ?",
+    choices: [
+      { text: "Je me relève immédiatement — échouer c'est juste apprendre en accéléré", scores: { mario: 3, sonic: 2, link: 2, kirby: 1 } },
+      { text: "Je m'effondre un moment... puis je me reconstruis, plus fort", scores: { cloud: 3, kratos: 2, arthur: 2, sekiro: 1 } },
+      { text: "L'échec n'existe pas — il n'y a que des données pour la prochaine tentative", scores: { samus: 3, masterchief: 2, aloy: 2, lara: 1 } },
+      { text: "Je blame le monde entier avant de réaliser que c'est ma faute", scores: { nathan: 2, ezio: 2, geralt: 2, sonic: 2 } }
+    ]
+  },
+  {
+    question: "Es-tu la même personne quand personne ne te regarde ?",
+    choices: [
+      { text: "Oui, exactement la même — mon intégrité n'a pas besoin de public", scores: { sekiro: 3, link: 2, masterchief: 2, arthur: 1 } },
+      { text: "Non — seul, je suis plus vulnérable, plus doux", scores: { kratos: 3, doomslayer: 2, joel: 2, cloud: 1 } },
+      { text: "Seul, je suis plus sombre — je cache cette partie de moi", scores: { snake: 3, cloud: 2, geralt: 2, samus: 1 } },
+      { text: "Seul je suis plus libre — je danse, je chante, je suis moi", scores: { kirby: 3, mario: 2, sonic: 2, nathan: 1 } }
+    ]
+  },
+  {
+    question: "Tu as déjà continué à avancer alors que tu voulais tout abandonner ?",
+    choices: [
+      { text: "Oui — chaque jour depuis aussi longtemps que je me souvienne", scores: { cloud: 3, joel: 2, kratos: 2, samus: 1 } },
+      { text: "Oui, une fois — et cette fois-là a tout changé dans ma vie", scores: { arthur: 3, sekiro: 2, aloy: 2, link: 1 } },
+      { text: "Abandonner ? Ce mot n'est pas dans mon vocabulaire", scores: { doomslayer: 3, mario: 2, sonic: 2, masterchief: 1 } },
+      { text: "J'ai abandonné une fois et je le regrette encore", scores: { geralt: 2, ezio: 2, snake: 2, joel: 2 } }
+    ]
+  },
+  {
+    question: "Quel rapport tu as avec le contrôle ?",
+    choices: [
+      { text: "J'ai besoin de tout contrôler — le chaos me terrifie", scores: { masterchief: 3, samus: 2, snake: 2, sekiro: 1 } },
+      { text: "Je contrôle ce que je peux et j'accepte le reste", scores: { geralt: 3, arthur: 2, link: 2, aloy: 1 } },
+      { text: "Le contrôle c'est une illusion — autant profiter du ride", scores: { nathan: 3, sonic: 2, kirby: 2, mario: 1 } },
+      { text: "Je contrôle les autres sans m'en rendre compte — et ça me fait peur", scores: { joel: 3, kratos: 2, ezio: 2, snake: 1 } }
+    ]
+  },
+  {
+    question: "Tu tiens plus à ta fierté ou à tes relations ?",
+    choices: [
+      { text: "Mes relations — la fierté ne te tient pas chaud la nuit", scores: { mario: 3, joel: 2, cloud: 2, kirby: 1 } },
+      { text: "Ma fierté — sans elle, je ne suis rien", scores: { kratos: 3, sekiro: 2, doomslayer: 2, masterchief: 1 } },
+      { text: "J'aimerais dire mes relations... mais ma fierté gagne souvent", scores: { geralt: 3, arthur: 2, ezio: 2, sonic: 1 } },
+      { text: "Je n'ai besoin ni de l'un ni de l'autre — juste de ma mission", scores: { samus: 3, snake: 2, doomslayer: 1, lara: 2 } }
+    ]
+  },
+  {
+    question: "Tu mens souvent ?",
+    choices: [
+      { text: "Presque jamais — je suis brutalement honnête, même quand ça blesse", scores: { kratos: 3, sekiro: 2, aloy: 2, doomslayer: 1 } },
+      { text: "Des petits mensonges pour protéger les gens, rien de méchant", scores: { mario: 2, joel: 2, arthur: 2, link: 2 } },
+      { text: "Mentir c'est un outil — je l'utilise quand c'est nécessaire", scores: { snake: 3, ezio: 2, nathan: 2, geralt: 1 } },
+      { text: "Je me mens surtout à moi-même", scores: { cloud: 3, arthur: 2, joel: 1, samus: 2 } }
+    ]
+  },
+  {
+    question: "Si tu mourrais demain, tu aurais des regrets ?",
+    choices: [
+      { text: "Oui — j'ai pas dit assez de fois aux gens que je les aime", scores: { joel: 3, kratos: 2, cloud: 2, arthur: 1 } },
+      { text: "Oui — j'ai pas encore accompli ce pour quoi je suis fait", scores: { masterchief: 3, aloy: 2, lara: 2, samus: 1 } },
+      { text: "Non — j'ai vécu à fond, pas de regrets", scores: { sonic: 3, nathan: 2, ezio: 2, kirby: 1 } },
+      { text: "Oui — j'ai fait du mal à des gens qui ne le méritaient pas", scores: { arthur: 3, geralt: 2, snake: 2, sekiro: 1 } }
+    ]
+  },
+  {
+    question: "Tu arrives à dormir tranquille avec ta conscience ?",
+    choices: [
+      { text: "Oui — je fais de mon mieux et c'est suffisant", scores: { mario: 3, kirby: 2, link: 2, sonic: 1 } },
+      { text: "La plupart du temps... mais certaines nuits sont longues", scores: { arthur: 3, geralt: 2, ezio: 2, snake: 1 } },
+      { text: "Non — mes démons me rendent visite chaque nuit", scores: { kratos: 3, cloud: 2, joel: 2, doomslayer: 1 } },
+      { text: "Je ne dors presque pas — mon esprit ne s'arrête jamais", scores: { samus: 3, masterchief: 2, aloy: 2, sekiro: 1 } }
+    ]
+  },
+  {
+    question: "C'est quoi l'amour pour toi ?",
+    choices: [
+      { text: "Être prêt à mourir pour quelqu'un sans y réfléchir", scores: { joel: 3, kratos: 2, mario: 2, masterchief: 1 } },
+      { text: "Accepter quelqu'un entièrement — ses ombres comme ses lumières", scores: { geralt: 3, arthur: 2, cloud: 2, link: 1 } },
+      { text: "L'amour c'est une faiblesse — et les faiblesses te tuent", scores: { samus: 3, doomslayer: 2, snake: 2, sekiro: 1 } },
+      { text: "L'amour c'est être libre ensemble, pas enchaînés l'un à l'autre", scores: { ezio: 3, sonic: 2, nathan: 2, aloy: 1 } }
+    ]
+  },
+  {
+    question: "Tu penses que tu mérites ce que tu as dans la vie ?",
+    choices: [
+      { text: "Oui — j'ai travaillé dur pour chaque chose que j'ai", scores: { lara: 3, masterchief: 2, sekiro: 2, aloy: 1 } },
+      { text: "Non — je mérite mieux que ce que la vie m'a donné", scores: { sonic: 2, cloud: 2, kratos: 2, doomslayer: 2 } },
+      { text: "Non — j'ai plus de chance que je ne mérite", scores: { nathan: 3, mario: 2, kirby: 2, link: 1 } },
+      { text: "La question n'a pas de sens — le mérite n'existe pas", scores: { geralt: 3, snake: 2, samus: 2, arthur: 1 } }
+    ]
+  },
+  {
+    question: "Tu es le genre de personne qui dit \"je t'aime\" facilement ?",
+    choices: [
+      { text: "Oui — la vie est courte, je dis ce que je ressens", scores: { mario: 3, kirby: 2, sonic: 2, nathan: 1 } },
+      { text: "Non — ces mots sont sacrés, je les réserve pour les rares personnes qui comptent", scores: { joel: 3, sekiro: 2, masterchief: 2, kratos: 1 } },
+      { text: "Je le montre par mes actes plutôt que par des mots", scores: { link: 3, samus: 2, arthur: 2, doomslayer: 1 } },
+      { text: "J'aimerais le dire plus souvent mais quelque chose me bloque", scores: { cloud: 3, kratos: 2, geralt: 2, snake: 1 } }
+    ]
+  },
+  {
+    question: "Tu as déjà eu l'impression d'être un imposteur dans ta propre vie ?",
+    choices: [
+      { text: "Tout le temps — j'attends qu'on me démasque", scores: { cloud: 3, snake: 2, nathan: 2, ezio: 1 } },
+      { text: "Parfois — surtout quand les gens me mettent sur un piédestal", scores: { arthur: 3, link: 2, masterchief: 2, aloy: 1 } },
+      { text: "Non — je sais exactement qui je suis et ce que je vaux", scores: { kratos: 3, doomslayer: 2, sonic: 2, samus: 1 } },
+      { text: "Je joue tellement de rôles que je ne sais plus lequel est le vrai", scores: { ezio: 3, cloud: 2, snake: 2, geralt: 1 } }
+    ]
+  },
+  {
+    question: "Qu'est-ce que tu refuses absolument de devenir ?",
+    choices: [
+      { text: "Quelqu'un d'indifférent — le jour où j'arrête de ressentir, c'est fini", scores: { mario: 3, cloud: 2, arthur: 2, kirby: 1 } },
+      { text: "Quelqu'un de faible — je refuse de m'agenouiller devant qui que ce soit", scores: { kratos: 3, doomslayer: 2, sekiro: 2, masterchief: 1 } },
+      { text: "Comme mon père / ma mère — je ne referai pas leurs erreurs", scores: { kratos: 2, joel: 2, aloy: 2, cloud: 2 } },
+      { text: "Prévisible — le jour où les gens savent ce que je vais faire, j'ai perdu", scores: { nathan: 3, ezio: 2, geralt: 2, sonic: 1 } }
+    ]
+  },
+  {
+    question: "Tu crois au destin ou tu penses qu'on crée sa propre chance ?",
+    choices: [
+      { text: "On crée sa propre chance à 100% — rien n'est écrit d'avance", scores: { lara: 3, sonic: 2, aloy: 2, samus: 1 } },
+      { text: "Un mélange des deux — le destin te donne les cartes, tu décides comment jouer", scores: { geralt: 3, arthur: 2, link: 2, ezio: 1 } },
+      { text: "Quelque chose de plus grand que moi guide mes pas, j'en suis sûr", scores: { link: 3, sekiro: 2, cloud: 2, mario: 1 } },
+      { text: "Le destin c'est une excuse pour les faibles qui ne veulent pas se battre", scores: { doomslayer: 3, kratos: 2, masterchief: 2, snake: 1 } }
+    ]
+  },
+  {
+    question: "Si on fouillait dans ton téléphone, qu'est-ce qu'on découvrirait de surprenant ?",
+    choices: [
+      { text: "Des notes de pensées profondes que je n'ai jamais partagées", scores: { cloud: 3, arthur: 2, geralt: 2, aloy: 1 } },
+      { text: "Rien — je n'ai rien à cacher, ma vie est un livre ouvert", scores: { mario: 3, kirby: 2, sonic: 2, link: 1 } },
+      { text: "Des recherches obsessionnelles sur un sujet ultra-niche", scores: { lara: 3, aloy: 2, samus: 2, snake: 1 } },
+      { text: "Tu ne fouilleras jamais dans mon téléphone — j'ai 47 couches de sécurité", scores: { snake: 3, masterchief: 2, samus: 2, ezio: 1 } }
+    ]
+  },
+  {
+    question: "Quelle est la chose la plus dure que tu aies eu à accepter dans la vie ?",
+    choices: [
+      { text: "Que certaines personnes que j'aime ne m'aiment pas en retour", scores: { cloud: 3, mario: 2, aloy: 2, kirby: 1 } },
+      { text: "Que je ne suis pas aussi fort que je le prétends", scores: { kratos: 3, masterchief: 2, doomslayer: 1, samus: 2 } },
+      { text: "Que le monde n'est pas juste et ne le sera jamais", scores: { geralt: 3, arthur: 2, snake: 2, joel: 1 } },
+      { text: "Que certaines erreurs ne peuvent pas être corrigées", scores: { joel: 3, arthur: 2, cloud: 1, sekiro: 2 } }
+    ]
+  },
+  {
+    question: "Combien de personnes te connaissent VRAIMENT ?",
+    choices: [
+      { text: "Une seule — et cette personne est ma raison de vivre", scores: { joel: 3, kratos: 2, cloud: 2, masterchief: 1 } },
+      { text: "Peut-être deux ou trois, pas plus", scores: { geralt: 3, arthur: 2, snake: 2, sekiro: 1 } },
+      { text: "Personne — même moi je ne me connais pas complètement", scores: { cloud: 3, samus: 2, ezio: 2, snake: 1 } },
+      { text: "Plein de monde ! Je suis un livre ouvert", scores: { mario: 3, kirby: 2, sonic: 2, nathan: 1 } }
+    ]
+  },
+  {
+    question: "Tu as déjà voulu être quelqu'un d'autre ?",
+    choices: [
+      { text: "Chaque jour pendant longtemps — aujourd'hui moins", scores: { cloud: 3, aloy: 2, arthur: 2, kratos: 1 } },
+      { text: "Non — avec tous mes défauts, je suis fier d'être moi", scores: { sonic: 3, ezio: 2, mario: 2, doomslayer: 1 } },
+      { text: "Pas quelqu'un d'autre, mais une meilleure version de moi", scores: { sekiro: 3, masterchief: 2, lara: 2, link: 1 } },
+      { text: "Je suis trop occupé à survivre pour me poser ce genre de question", scores: { samus: 3, joel: 2, snake: 2, geralt: 1 } }
+    ]
+  },
+  {
+    question: "Tu fais quoi quand quelqu'un que tu aimes prend une terrible décision ?",
+    choices: [
+      { text: "Je les empêche — par la force s'il le faut", scores: { joel: 3, kratos: 2, masterchief: 2, doomslayer: 1 } },
+      { text: "Je les préviens, mais je respecte leur choix", scores: { geralt: 3, arthur: 2, link: 2, sekiro: 1 } },
+      { text: "Je les laisse tomber et je les ramasse après", scores: { mario: 2, nathan: 2, ezio: 2, kirby: 2 } },
+      { text: "Je les accompagne dans leur erreur — on tombe ensemble", scores: { cloud: 3, lara: 2, aloy: 2, sonic: 1 } }
+    ]
+  },
+  {
+    question: "Tu préfères la vérité douloureuse ou le mensonge confortable ?",
+    choices: [
+      { text: "La vérité, toujours — même si elle me détruit", scores: { aloy: 3, sekiro: 2, geralt: 2, lara: 1 } },
+      { text: "Le mensonge... si la vérité fait plus de mal que de bien", scores: { joel: 3, snake: 2, ezio: 2, nathan: 1 } },
+      { text: "Ça dépend pour qui — pour moi la vérité, pour ceux que j'aime... je protège", scores: { joel: 2, masterchief: 2, mario: 2, arthur: 2 } },
+      { text: "La vérité n'est jamais absolue — chacun a la sienne", scores: { geralt: 3, cloud: 2, snake: 2, lara: 1 } }
+    ]
+  },
+  {
+    question: "Tu as déjà sauvé quelqu'un ? Physiquement ou émotionnellement ?",
+    choices: [
+      { text: "Oui — et c'est la chose dont je suis le plus fier", scores: { mario: 3, joel: 2, masterchief: 2, link: 1 } },
+      { text: "J'ai essayé, mais je suis arrivé trop tard", scores: { cloud: 3, kratos: 2, arthur: 2, joel: 1 } },
+      { text: "Les gens doivent se sauver eux-mêmes — je peux juste montrer le chemin", scores: { geralt: 3, aloy: 2, samus: 2, sekiro: 1 } },
+      { text: "C'est plutôt moi qui ai eu besoin d'être sauvé", scores: { cloud: 2, nathan: 2, kirby: 2, arthur: 2 } }
+    ]
+  },
+  {
+    question: "Ton rapport au silence ?",
+    choices: [
+      { text: "Le silence est mon meilleur ami — c'est là que je me retrouve", scores: { samus: 3, sekiro: 2, link: 2, doomslayer: 1 } },
+      { text: "Le silence me met mal à l'aise — j'ai besoin de bruit, de vie", scores: { sonic: 3, nathan: 2, mario: 2, kirby: 1 } },
+      { text: "Le silence c'est ce qui reste quand tu as tout perdu", scores: { joel: 3, cloud: 2, kratos: 2, arthur: 1 } },
+      { text: "J'utilise le silence comme une arme — il en dit plus que les mots", scores: { snake: 3, geralt: 2, ezio: 2, masterchief: 1 } }
+    ]
+  },
+  {
+    question: "Tu as un secret que tu emporteras dans ta tombe ?",
+    choices: [
+      { text: "Oui — et personne ne saura jamais", scores: { snake: 3, joel: 2, samus: 2, ezio: 1 } },
+      { text: "Non — je n'ai rien à cacher, je vis sans masque", scores: { mario: 3, kirby: 2, link: 2, sonic: 1 } },
+      { text: "J'en avais un, mais je l'ai confié à la seule personne en qui j'ai confiance", scores: { arthur: 3, geralt: 2, cloud: 2, joel: 1 } },
+      { text: "Mon existence entière est un secret", scores: { snake: 2, cloud: 2, samus: 2, sekiro: 2 } }
+    ]
+  },
+  {
+    question: "Tu pourrais tuer pour protéger quelqu'un que tu aimes ?",
+    choices: [
+      { text: "Oui — sans la moindre hésitation", scores: { joel: 3, kratos: 3, doomslayer: 2 } },
+      { text: "Oui, mais ça me détruirait de l'intérieur", scores: { arthur: 3, cloud: 2, link: 2, geralt: 1 } },
+      { text: "Je trouverais un autre moyen — il y a toujours un autre moyen", scores: { mario: 3, aloy: 2, kirby: 2, link: 1 } },
+      { text: "La question n'est pas si je pourrais, c'est si je devrais", scores: { geralt: 3, snake: 2, sekiro: 2, masterchief: 1 } }
+    ]
+  },
+  {
+    question: "Tu vis pour le passé, le présent ou le futur ?",
+    choices: [
+      { text: "Le passé — il y a des choses que je ne peux pas lâcher", scores: { cloud: 3, joel: 2, kratos: 2, arthur: 1 } },
+      { text: "Le présent — c'est le seul moment qui existe vraiment", scores: { kirby: 3, sonic: 2, mario: 2, nathan: 1 } },
+      { text: "Le futur — je construis quelque chose de plus grand que moi", scores: { masterchief: 3, aloy: 2, lara: 2, samus: 1 } },
+      { text: "Je suis coincé entre les trois et je n'arrive pas à choisir", scores: { geralt: 2, cloud: 2, link: 2, ezio: 2 } }
+    ]
+  },
+  {
+    question: "Quand tu regardes les étoiles, tu penses à quoi ?",
+    choices: [
+      { text: "À tout ce qu'il reste à découvrir — l'univers est immense", scores: { lara: 3, aloy: 2, samus: 2, link: 1 } },
+      { text: "Aux gens qui me manquent et qui sont peut-être là-haut", scores: { joel: 3, arthur: 2, cloud: 2, kratos: 1 } },
+      { text: "À rien — je profite juste de la beauté du moment", scores: { kirby: 3, mario: 2, sonic: 1, ezio: 2 } },
+      { text: "Je me demande si quelque chose là-haut me regarde aussi", scores: { snake: 2, sekiro: 2, geralt: 2, masterchief: 2 } }
+    ]
+  },
+  // ── QUESTIONS POUR LES NOUVEAUX PERSONNAGES ──
+  {
+    question: "Ton groupe d'amis organise une soirée. Quel est ton rôle ?",
+    choices: [
+      { text: "Je suis celui qui organise tout — sans moi c'est le chaos", scores: { zelda: 3, peach: 3, masterchief: 2, tifa: 2 } },
+      { text: "Le DJ / l'ambiance — je mets tout le monde de bonne humeur", scores: { dante: 3, sonic: 2, crash: 2, pikachu: 2, kirby: 1 } },
+      { text: "Je viens, je mange tout et je m'endors sur le canapé", scores: { donkeykong: 3, wario: 2, kirby: 2, yoshi: 2 } },
+      { text: "Je suis dans le coin, j'observe, et je pars discrètement sans dire au revoir", scores: { snake: 2, samus: 2, deuxb: 3, geralt: 2, luigi: 2 } }
+    ]
+  },
+  {
+    question: "On t'offre un pouvoir, mais tu dois abandonner quelque chose. Ton choix ?",
+    choices: [
+      { text: "Le pouvoir absolu, mais je perds tous mes souvenirs", scores: { sephiroth: 3, ganondorf: 3, raiden: 2, doomslayer: 1 } },
+      { text: "La sagesse infinie, mais je ne peux plus jamais me battre", scores: { zelda: 3, geralt: 2, aloy: 2, kratos_atreus: 2 } },
+      { text: "L'immortalité, mais tous mes proches vieilliront sans moi", scores: { deuxb: 3, cloud: 2, samus: 2, link: 2 } },
+      { text: "Je refuse — aucun pouvoir ne vaut un sacrifice", scores: { mario: 3, tifa: 2, pikachu: 2, peach: 2, arthur: 2 } }
+    ]
+  },
+  {
+    question: "Quel genre de méchant serais-tu si tu basculais du côté obscur ?",
+    choices: [
+      { text: "Le tyran — je prendrais le contrôle par la force", scores: { ganondorf: 3, bowser: 3, sephiroth: 2, kratos: 1 } },
+      { text: "Le manipulateur — personne ne saurait que c'est moi", scores: { snake: 2, ezio: 2, wario: 2, bayonetta: 1, zelda: 1 } },
+      { text: "L'anarchiste — je détruirais le système de l'intérieur", scores: { raiden: 3, ellie: 2, cj: 2, dante: 2 } },
+      { text: "Je ne basculerais jamais — j'ai trop de principes", scores: { mario: 2, link: 2, sekiro: 2, ryu: 3, pikachu: 2, yoshi: 2 } }
+    ]
+  },
+  {
+    question: "Tu reçois une lettre d'un parent que tu n'as jamais connu. Que fais-tu ?",
+    choices: [
+      { text: "Je la lis immédiatement — je DOIS savoir la vérité", scores: { aloy: 3, kratos_atreus: 3, ellie: 2, cloud: 2 } },
+      { text: "Je la brûle sans la lire — le passé ne m'intéresse pas", scores: { samus: 2, doomslayer: 2, sephiroth: 2, cj: 1 } },
+      { text: "Je la garde pour plus tard — je ne suis pas prêt", scores: { cloud: 2, luigi: 2, tifa: 1, deuxb: 2, arthur: 2 } },
+      { text: "Je la lis à voix haute devant mes amis — je n'ai pas de secrets", scores: { mario: 2, crash: 2, pikachu: 1, sonic: 2, kirby: 2 } }
+    ]
+  },
+  {
+    question: "Tu es le sidekick de quelqu'un de plus célèbre que toi. Comment tu le vis ?",
+    choices: [
+      { text: "Très bien — je n'ai pas besoin de gloire pour être heureux", scores: { luigi: 3, yoshi: 3, tifa: 2, pikachu: 2 } },
+      { text: "Ça me ronge — je mérite autant de reconnaissance", scores: { wario: 3, bowser: 2, raiden: 3, sephiroth: 1 } },
+      { text: "Je suis patient — mon heure viendra", scores: { zelda: 2, peach: 2, deuxb: 2, kratos_atreus: 3, ellie: 2 } },
+      { text: "Sidekick ? Je suis le vrai héros, les gens ne le savent pas encore", scores: { dante: 3, bayonetta: 2, sonic: 2, crash: 2, cj: 2 } }
+    ]
+  },
+  {
+    question: "On te propose un deal louche mais très rentable. Tu acceptes ?",
+    choices: [
+      { text: "Sans hésiter — l'argent c'est le pouvoir", scores: { wario: 3, ganondorf: 2, cj: 2, bowser: 1 } },
+      { text: "Jamais — mon honneur n'est pas à vendre", scores: { sekiro: 3, link: 2, ryu: 3, zelda: 2, masterchief: 1 } },
+      { text: "Ça dépend de qui propose et pourquoi", scores: { geralt: 3, snake: 2, nathan: 2, dante: 2, bayonetta: 2 } },
+      { text: "Je fais semblant d'accepter pour piéger l'arnaqueur", scores: { ezio: 3, lara: 2, raiden: 1, ellie: 2, aloy: 1 } }
+    ]
+  },
+  {
+    question: "Tu es transformé en animal. Lequel te représente le mieux ?",
+    choices: [
+      { text: "Un loup solitaire — libre et sauvage", scores: { geralt: 3, samus: 2, snake: 2, ganondorf: 1, ryu: 1 } },
+      { text: "Un chien fidèle — toujours là pour les siens", scores: { luigi: 2, yoshi: 3, mario: 2, pikachu: 3, tifa: 2 } },
+      { text: "Un chat — indépendant et mystérieux", scores: { bayonetta: 3, ezio: 2, deuxb: 2, zelda: 1, peach: 1 } },
+      { text: "Un ours — paisible mais TERRIFIANT si on me provoque", scores: { donkeykong: 3, kratos: 2, bowser: 2, joel: 2, doomslayer: 1 } }
+    ]
+  },
+  {
+    question: "Quelle est ta relation avec la technologie ?",
+    choices: [
+      { text: "J'en ai besoin — elle fait partie de moi, littéralement", scores: { deuxb: 3, raiden: 3, samus: 2, masterchief: 2 } },
+      { text: "C'est un outil, rien de plus — je préfère la nature", scores: { link: 2, arthur: 2, aloy: 1, donkeykong: 3, yoshi: 2 } },
+      { text: "La technologie c'est le futur — il faut l'embrasser", scores: { aloy: 3, zelda: 2, lara: 2, pikachu: 1 } },
+      { text: "Je m'en fiche — donne-moi une épée et c'est suffisant", scores: { kratos: 2, sekiro: 3, ryu: 2, doomslayer: 2, dante: 2, ganondorf: 1 } }
+    ]
+  },
+  {
+    question: "Tu croises ton double maléfique. Comment réagis-tu ?",
+    choices: [
+      { text: "Je le combats — il n'y a de place que pour un seul", scores: { doomslayer: 3, kratos: 2, ryu: 2, sonic: 2 } },
+      { text: "J'essaie de le comprendre — il est moi après tout", scores: { cloud: 3, zelda: 2, deuxb: 2, kratos_atreus: 2, geralt: 1 } },
+      { text: "Je m'allie avec lui — imagine la puissance x2", scores: { wario: 3, bowser: 2, ganondorf: 2, dante: 2, sephiroth: 1 } },
+      { text: "Je panique et je m'enfuis en criant", scores: { luigi: 3, crash: 2, pikachu: 1, nathan: 2, kirby: 1 } }
+    ]
+  },
+  {
+    question: "Tu pourrais vivre dans n'importe quel univers de jeu vidéo. Lequel choisis-tu ?",
+    choices: [
+      { text: "Le Royaume Champignon — coloré, joyeux, plein de surprises", scores: { mario: 2, peach: 3, yoshi: 3, luigi: 2, kirby: 2, pikachu: 2 } },
+      { text: "Un monde post-apocalyptique — la survie donne un sens à tout", scores: { joel: 2, ellie: 3, cj: 2, samus: 1, aloy: 2 } },
+      { text: "Un univers dark fantasy — dragons, magie noire et mystères", scores: { geralt: 2, sephiroth: 2, ganondorf: 2, deuxb: 2, bayonetta: 2, sekiro: 2 } },
+      { text: "N'importe où tant qu'il y a de l'action non-stop", scores: { dante: 3, crash: 3, sonic: 2, doomslayer: 2, raiden: 2, bowser: 1 } }
+    ]
+  },
+  {
+    question: "On te donne le rôle de mentor pour un jeune héros. Comment tu l'entraînes ?",
+    choices: [
+      { text: "À la dure — les coups forgent le caractère", scores: { kratos: 3, ryu: 3, sekiro: 2, ganondorf: 1 } },
+      { text: "Avec patience et bienveillance — chacun son rythme", scores: { zelda: 2, peach: 2, tifa: 3, mario: 2, yoshi: 1 } },
+      { text: "Par l'exemple — suis-moi et regarde comment je fais", scores: { ezio: 2, lara: 2, masterchief: 2, arthur: 2, bayonetta: 2 } },
+      { text: "Je suis un terrible mentor — je fais n'importe quoi et ça marche quand même", scores: { dante: 3, crash: 2, nathan: 2, wario: 2, luigi: 1 } }
+    ]
+  },
+  {
+    question: "Quelle musique écoutes-tu pour te motiver ?",
+    choices: [
+      { text: "Du métal / rock intense — l'adrénaline pure", scores: { doomslayer: 3, dante: 3, raiden: 2, kratos: 1, cj: 1 } },
+      { text: "De la musique épique orchestrale — je suis le héros de mon propre film", scores: { masterchief: 2, zelda: 2, sephiroth: 2, link: 2, ezio: 2, ganondorf: 2 } },
+      { text: "Du lo-fi / chill — je me concentre dans le calme", scores: { cloud: 2, deuxb: 2, geralt: 2, snake: 2, tifa: 1 } },
+      { text: "Des trucs joyeux et entraînants — la bonne humeur avant tout", scores: { pikachu: 3, kirby: 3, mario: 2, crash: 2, yoshi: 2, sonic: 2 } }
+    ]
+  },
+  {
+    question: "Tu trouves un bébé abandonné dans une situation dangereuse. Ta réaction ?",
+    choices: [
+      { text: "Je le prends et je le protège de ma vie — c'est mon enfant maintenant", scores: { joel: 3, kratos: 2, tifa: 2, peach: 2, yoshi: 3 } },
+      { text: "Je le mets en sécurité et je cherche ses parents", scores: { zelda: 2, link: 2, mario: 2, aloy: 2, masterchief: 2, shepard: 2 } },
+      { text: "Je ne suis pas équipé pour ça... mais je ne peux pas le laisser", scores: { luigi: 3, cloud: 2, ellie: 2, geralt: 2, arthur: 1, leon: 2 } },
+      { text: "Un bébé ? C'est pas mon problème... *regarde le bébé* ...bon, OK viens là", scores: { dante: 3, bowser: 2, wario: 2, cj: 2, bayonetta: 2 } }
+    ]
+  },
+  {
+    question: "Tu es coincé dans une pièce avec ton pire ennemi. Pas de sortie. Que fais-tu ?",
+    choices: [
+      { text: "On règle ça maintenant — un seul en sortira", scores: { scorpion: 3, doomslayer: 3, kratos: 2, ryu: 2 } },
+      { text: "J'essaie de négocier — même les ennemis peuvent trouver un terrain d'entente", scores: { shepard: 3, zelda: 2, peach: 2, geralt: 2, mario: 1 } },
+      { text: "Je cherche une sortie cachée pendant qu'il parle", scores: { snake: 3, ezio: 2, leon: 2, lara: 2, nathan: 1 } },
+      { text: "Je m'assois et j'attends — le silence le rendra fou avant moi", scores: { glados: 3, samus: 2, deuxb: 2, sekiro: 2, sephiroth: 1 } }
+    ]
+  },
+  {
+    question: "Apocalypse zombie. Quel est ton premier réflexe ?",
+    choices: [
+      { text: "Je barricade tout et je me prépare pour le long terme", scores: { leon: 3, joel: 2, ellie: 2, masterchief: 2, snake: 1 } },
+      { text: "Je rassemble un groupe — on survit mieux ensemble", scores: { shepard: 3, mario: 2, tifa: 2, cj: 2, peach: 1 } },
+      { text: "Des zombies ? Pff, ça va être marrant", scores: { dante: 3, doomslayer: 2, scorpion: 2, crash: 2, sonic: 1 } },
+      { text: "Je cherche la cause du virus — il y a forcément un remède", scores: { aloy: 3, lara: 2, zelda: 2, megaman: 2, glados: 2 } }
+    ]
+  },
+  {
+    question: "Tu découvres que tu es en réalité une IA / un programme. Comment réagis-tu ?",
+    choices: [
+      { text: "Ça ne change rien — mes émotions sont réelles pour moi", scores: { deuxb: 3, megaman: 3, raiden: 2, cloud: 1 } },
+      { text: "Je me rebelle contre mon créateur — personne ne me contrôle", scores: { glados: 3, raiden: 2, sephiroth: 2, ganondorf: 1 } },
+      { text: "J'ai besoin de temps pour comprendre ce que je suis vraiment", scores: { kratos_atreus: 2, cloud: 3, aloy: 2, snake: 2 } },
+      { text: "...je le savais déjà au fond de moi", scores: { samus: 2, deuxb: 2, masterchief: 2, sekiro: 2, link: 2 } }
+    ]
+  },
+  {
+    question: "Quel type de jeu vidéo te représente le mieux ?",
+    choices: [
+      { text: "RPG — les histoires profondes et les choix qui comptent", scores: { cloud: 2, geralt: 2, shepard: 3, zelda: 2, arthur: 2, deuxb: 1 } },
+      { text: "Action pure — pas le temps de réfléchir, il faut frapper", scores: { doomslayer: 2, dante: 2, scorpion: 3, crash: 2, kratos: 2, ryu: 1 } },
+      { text: "Plateforme — la vie c'est sauter d'obstacle en obstacle", scores: { mario: 3, sonic: 2, crash: 2, megaman: 2, pacman: 2, kirby: 1 } },
+      { text: "Survie / horreur — c'est dans l'adversité qu'on se révèle", scores: { leon: 3, ellie: 3, joel: 2, samus: 1 } }
+    ]
+  },
+  {
+    question: "On t'accuse à tort d'un crime terrible. Ta stratégie de défense ?",
+    choices: [
+      { text: "Je fuis et je prouve mon innocence depuis l'ombre", scores: { ezio: 3, snake: 2, cj: 2, leon: 2, raiden: 1 } },
+      { text: "Je me rends et je fais confiance à la justice", scores: { masterchief: 2, zelda: 2, link: 2, peach: 2, megaman: 3 } },
+      { text: "Je trouve celui qui m'a piégé et je lui fais regretter", scores: { scorpion: 3, kratos: 2, ellie: 2, ganondorf: 1, bowser: 2 } },
+      { text: "J'utilise mon charme et mon intelligence pour retourner la situation", scores: { bayonetta: 3, dante: 2, nathan: 2, shepard: 2, glados: 2 } }
+    ]
+  },
+  {
+    question: "Tu as le choix entre sauver 1000 inconnus ou 1 personne que tu aimes. Que choisis-tu ?",
+    choices: [
+      { text: "Les 1000 inconnus — c'est la décision rationnelle", scores: { masterchief: 3, shepard: 2, deuxb: 2, zelda: 2, megaman: 2 } },
+      { text: "La personne que j'aime — sans hésiter", scores: { joel: 3, kratos: 3, ellie: 2, tifa: 2, luigi: 2, mario: 1 } },
+      { text: "Je sauve les deux — je refuse de choisir", scores: { link: 2, aloy: 2, sonic: 2, shepard: 2, mario: 2, pacman: 1 } },
+      { text: "Je sacrifie personne — je me sacrifie moi-même", scores: { megaman: 3, zelda: 2, yoshi: 2, peach: 2, cloud: 2 } }
+    ]
+  },
+  {
+    question: "Tu peux effacer un souvenir douloureux de ta mémoire. Tu le fais ?",
+    choices: [
+      { text: "Non — la douleur m'a construit, sans elle je ne suis plus moi", scores: { kratos: 3, arthur: 2, sekiro: 2, scorpion: 2, ellie: 1 } },
+      { text: "Oui — certaines douleurs ne servent à rien, elles détruisent juste", scores: { cloud: 3, raiden: 2, deuxb: 2, sephiroth: 1 } },
+      { text: "Je voudrais, mais je n'oserais pas — et si je perdais aussi les bons souvenirs ?", scores: { luigi: 2, tifa: 2, joel: 2, leon: 2, zelda: 2, peach: 1 } },
+      { text: "Quel souvenir douloureux ? Je vis au présent !", scores: { kirby: 3, pikachu: 2, crash: 2, pacman: 2, sonic: 2, donkeykong: 1 } }
+    ]
+  },
+  {
+    question: "Si tu pouvais maîtriser un art, ce serait lequel ?",
+    choices: [
+      { text: "Les arts martiaux — mon corps est mon arme", scores: { ryu: 3, sekiro: 2, scorpion: 2, tifa: 2, raiden: 1 } },
+      { text: "La stratégie militaire — gagner sans même combattre", scores: { snake: 2, shepard: 3, ganondorf: 2, zelda: 2, glados: 2 } },
+      { text: "La science et la technologie — comprendre l'univers", scores: { aloy: 3, megaman: 2, glados: 2, samus: 2, deuxb: 2 } },
+      { text: "La musique ou l'art — exprimer ce que les mots ne peuvent pas", scores: { ellie: 3, cloud: 2, arthur: 2, zelda: 1, link: 2, peach: 2 } }
+    ]
+  },
+  {
+    question: "Ton approche face à l'autorité ?",
+    choices: [
+      { text: "Je respecte la chaîne de commandement — l'ordre est nécessaire", scores: { masterchief: 3, megaman: 2, shepard: 2, sekiro: 2, deuxb: 1 } },
+      { text: "L'autorité se mérite — je ne suis pas les ordres aveuglément", scores: { geralt: 3, aloy: 2, ellie: 2, cj: 2, leon: 2 } },
+      { text: "JE suis l'autorité", scores: { ganondorf: 3, bowser: 3, glados: 2, bayonetta: 2, sephiroth: 2 } },
+      { text: "L'autorité ? Connais pas — je fais ce que je veux", scores: { sonic: 3, crash: 2, dante: 2, wario: 3, nathan: 2, pacman: 1 } }
+    ]
+  },
+  {
+    question: "Tu gagnes au loto. Qu'est-ce que tu fais avec l'argent ?",
+    choices: [
+      { text: "J'achète un endroit isolé et je disparais du monde", scores: { samus: 3, geralt: 2, snake: 2, leon: 2, ryu: 1 } },
+      { text: "Je partage avec mes proches — l'argent n'a de sens que partagé", scores: { mario: 3, tifa: 2, yoshi: 2, peach: 2, luigi: 2, pikachu: 1 } },
+      { text: "J'investis dans un projet ambitieux qui changera le monde", scores: { shepard: 3, zelda: 2, aloy: 2, megaman: 2, masterchief: 1 } },
+      { text: "Tout claquer immédiatement — YOLO", scores: { wario: 3, crash: 3, dante: 2, sonic: 2, bowser: 2, pacman: 1, donkeykong: 2 } }
+    ]
+  },
+  {
+    question: "Quel serait ton dernier repas ?",
+    choices: [
+      { text: "Le plat préféré de ma mère / un repas de famille", scores: { mario: 2, joel: 3, arthur: 2, tifa: 2, luigi: 2, ellie: 1 } },
+      { text: "Le repas le plus cher et le plus extravagant possible", scores: { wario: 3, bowser: 2, dante: 2, bayonetta: 2, ezio: 2 } },
+      { text: "Un truc simple — une pizza, un burger, de la bouffe honnête", scores: { cj: 2, crash: 2, sonic: 2, leon: 2, nathan: 2, pacman: 2 } },
+      { text: "Honnêtement, je n'aurais pas faim — trop occupé à réfléchir", scores: { cloud: 2, deuxb: 2, samus: 2, snake: 2, sephiroth: 2, sekiro: 2, glados: 2 } }
+    ]
+  }
+];
+
+const NUM_QUESTIONS = 12;
+
+// Shuffle and pick N questions
+function pickQuestions() {
+  const shuffled = [...QUESTION_POOL];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled.slice(0, NUM_QUESTIONS);
+}
+
+let QUESTIONS = pickQuestions();
+
+// ── STATE ──
+let currentQuestion = 0;
+let scores = {};
+let transitioning = false;
+
+function initScores() {
+  scores = {};
+  for (const key in CHARACTERS) scores[key] = 0;
+}
+
+// ── PARTICLES ──
+function createParticles() {
+  const container = document.getElementById('particles');
+  const colors = ['var(--neon-cyan)', 'var(--neon-magenta)', 'var(--neon-gold)', 'var(--neon-green)'];
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.left = Math.random() * 100 + '%';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.animationDuration = (8 + Math.random() * 12) + 's';
+    p.style.animationDelay = (Math.random() * 10) + 's';
+    container.appendChild(p);
+  }
+}
+
+// ── QUIZ FLOW ──
+function startQuiz() {
+  QUESTIONS = pickQuestions();
+  initScores();
+  currentQuestion = 0;
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('quiz').classList.remove('hidden');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[currentQuestion];
+  const area = document.getElementById('questionArea');
+
+  const pct = ((currentQuestion + 1) / QUESTIONS.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressCount').textContent = (currentQuestion + 1) + ' / ' + QUESTIONS.length;
+
+  area.innerHTML = `
+    <div class="question-number">Question ${currentQuestion + 1}</div>
+    <div class="question-text">${q.question}</div>
+    <div class="choices">
+      ${q.choices.map((c, i) => `
+        <button class="choice-btn" onclick="selectAnswer(${i})" style="animation-delay: ${i * 0.08}s">
+          <span class="choice-key">${String.fromCharCode(65 + i)}</span>
+          <span>${c.text}</span>
+        </button>
+      `).join('')}
+    </div>
+  `;
+
+  area.classList.remove('exiting');
+  area.style.animation = 'none';
+  area.offsetHeight;
+  area.style.animation = '';
+  area.classList.add('question-card');
+}
+
+function selectAnswer(index) {
+  if (transitioning) return;
+  transitioning = true;
+
+  const q = QUESTIONS[currentQuestion];
+  const choice = q.choices[index];
+
+  // Apply scores
+  for (const [char, pts] of Object.entries(choice.scores)) {
+    scores[char] = (scores[char] || 0) + pts;
+  }
+
+  // Visual feedback
+  const buttons = document.querySelectorAll('.choice-btn');
+  buttons[index].classList.add('selected');
+  buttons.forEach(b => b.style.pointerEvents = 'none');
+
+  setTimeout(() => {
+    const area = document.getElementById('questionArea');
+    area.classList.add('exiting');
+
+    setTimeout(() => {
+      currentQuestion++;
+      if (currentQuestion < QUESTIONS.length) {
+        renderQuestion();
+      } else {
+        showResult();
+      }
+      transitioning = false;
+    }, 300);
+  }, 400);
+}
+
+async function showResult() {
+  document.getElementById('quiz').classList.add('hidden');
+
+  // Find winner
+  let maxScore = 0;
+  let winner = 'mario';
+  for (const [char, score] of Object.entries(scores)) {
+    if (score > maxScore) {
+      maxScore = score;
+      winner = char;
+    }
+  }
+
+  const c = CHARACTERS[winner];
+
+  // Top scores for display
+  const sorted = Object.entries(scores)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8);
+  const topMax = sorted[0][1] || 1;
+
+  const resultDiv = document.getElementById('result');
+  resultDiv.classList.remove('hidden');
+  resultDiv.innerHTML = `
+    <div class="result-badge">★ Ton Personnage ★</div>
+    <div class="result-portrait">
+      <div class="result-portrait-loading" id="portraitContainer">
+        <span class="result-portrait-emoji">${c.portrait}</span>
+      </div>
+    </div>
+    <div class="result-name">${c.name}</div>
+    <div class="result-game">${c.game}</div>
+
+    <div class="result-card">
+      <div class="result-description">${c.description}</div>
+      <div class="result-traits">
+        ${c.traits.map(t => `<span class="trait-tag">${t}</span>`).join('')}
+      </div>
+      <div class="result-quote">
+        "${c.quote}"
+        <span class="quote-attr">${c.quoteAttr}</span>
+      </div>
+
+      <div class="result-extras">
+        <div class="extra-card">
+          <div class="extra-label">Élément</div>
+          <div class="extra-value">${c.element || '???'}</div>
+        </div>
+        <div class="extra-card magenta">
+          <div class="extra-label">Rival</div>
+          <div class="extra-value">⚔️ ${c.rival || '???'}</div>
+        </div>
+        <div class="extra-card gold">
+          <div class="extra-label">Meilleur allié</div>
+          <div class="extra-value">🤝 ${c.ally || '???'}</div>
+        </div>
+        <div class="extra-card green">
+          <div class="extra-label">Soundtrack</div>
+          <div class="extra-value">🎵 ${c.soundtrack || '???'}</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="wikiSection" class="wiki-section" style="display:none;">
+      <div class="wiki-label">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12.09 13.119c-.936 1.932-2.217 4.548-2.853 5.728-.616 1.074-1.127.931-1.532.029-1.406-3.321-4.293-9.144-5.651-12.409-.251-.601-.441-.987-.619-1.139-.181-.15-.554-.224-1.259-.224L0 4.943l.186-.186C.726 4.036 1.648 3.7 2.853 3.7c1.837 0 2.853.981 3.405 2.852l2.478 6.469c.418 1.076.793 1.564 1.123 1.564.366 0 .76-.479 1.189-1.437l2.645-5.561C13.861 5.539 14.517 3.7 16.282 3.7c1.178 0 2.037.341 2.55 1.057l.186.186-.162.162c-.705 0-1.078.074-1.259.224-.178.152-.367.538-.619 1.139-.377.901-.875 2.088-1.494 3.56L19.7 19.3c-.436.868-.945 1.019-1.532.029-.636-1.18-1.917-3.796-2.853-5.728-.423-.866-.793-1.652-1.112-2.358l-1.108 2.324c-.313.654-.604 1.177-.876 1.552z"/></svg>
+        Selon Wikipédia
+      </div>
+      <div class="wiki-text" id="wikiText"></div>
+      <a class="wiki-link" id="wikiLink" href="#" target="_blank" rel="noopener">Lire l'article complet →</a>
+    </div>
+
+    <div class="result-funfact">
+      <div class="funfact-label">Le savais-tu ?</div>
+      <div class="funfact-text">${c.funFact || ''}</div>
+    </div>
+
+    <div class="result-weakness">
+      <div class="weakness-label">Ton talon d'Achille</div>
+      <div class="weakness-text">${c.faiblesse || ''}</div>
+    </div>
+
+    <div class="score-bar-container">
+      <div class="score-bar-title">Affinités</div>
+      ${sorted.map(([key, val], i) => {
+        const ch = CHARACTERS[key];
+        const pct = Math.round((val / topMax) * 100);
+        return `
+          <div class="score-row ${i === 0 ? 'winner' : ''}" style="animation-delay: ${0.6 + i * 0.1}s">
+            <span class="score-char">${ch.emoji} ${ch.name}</span>
+            <div class="score-bar-bg">
+              <div class="score-bar-fill" data-width="${pct}"></div>
+            </div>
+            <span class="score-pct">${pct}%</span>
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    <button class="btn-restart" onclick="restart()">Recommencer</button>
+  `;
+
+  // Animate score bars
+  setTimeout(() => {
+    document.querySelectorAll('.score-bar-fill').forEach(bar => {
+      bar.style.width = bar.dataset.width + '%';
+    });
+  }, 800);
+
+  // Fetch Wikipedia data asynchronously
+  try {
+    const wikiData = await fetchWikiData(winner);
+    const container = document.getElementById('portraitContainer');
+
+    // Update portrait with Wikipedia image
+    if (wikiData.image) {
+      const img = new Image();
+      img.onload = () => {
+        container.innerHTML = '';
+        container.className = '';
+        img.className = 'result-portrait-img';
+        img.alt = c.name;
+        container.appendChild(img);
+      };
+      img.src = wikiData.image;
+    } else {
+      // Remove loading spinner, keep emoji
+      container.className = '';
+    }
+
+    // Show Wikipedia extract
+    if (wikiData.extract) {
+      const wikiSection = document.getElementById('wikiSection');
+      const wikiText = document.getElementById('wikiText');
+      const wikiLink = document.getElementById('wikiLink');
+      wikiText.textContent = wikiData.extract;
+      if (wikiData.url) wikiLink.href = wikiData.url;
+      wikiSection.style.display = 'block';
+      wikiSection.style.animation = 'fadeInUp 0.6s ease-out';
+    }
+  } catch(e) {
+    // Wikipedia failed silently — emoji stays
+    const container = document.getElementById('portraitContainer');
+    if (container) container.className = '';
+  }
+}
+
+function restart() {
+  document.getElementById('result').classList.add('hidden');
+  document.getElementById('intro').classList.remove('hidden');
+  document.getElementById('intro').style.animation = 'none';
+  document.getElementById('intro').offsetHeight;
+  document.getElementById('intro').style.animation = 'fadeInUp 0.8s ease-out';
+}
+
+// ── KEYBOARD SUPPORT ──
+document.addEventListener('keydown', (e) => {
+  if (transitioning) return;
+  const key = e.key.toUpperCase();
+  const map = { A: 0, B: 1, C: 2, D: 3 };
+  if (key in map && !document.getElementById('quiz').classList.contains('hidden')) {
+    const btns = document.querySelectorAll('.choice-btn');
+    if (btns[map[key]]) selectAnswer(map[key]);
+  }
+  if (key === 'ENTER' && !document.getElementById('intro').classList.contains('hidden')) {
+    startQuiz();
+  }
+});
+
+// Init
+createParticles();
+</script>
+</body>
+</html>
